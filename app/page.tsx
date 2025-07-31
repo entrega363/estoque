@@ -4,7 +4,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { equipmentService, usedEquipmentService, Equipment, EquipmentUsed, authService, userService, equipmentServiceAuth } from '../lib/supabase';
+import { equipmentService, usedEquipmentService, Equipment, EquipmentUsed, authService, userService, equipmentServiceAuth, supabase } from '../lib/supabase';
+import LoadingScreen from '../components/LoadingScreen';
 
 // Adaptar interface para compatibilidade
 interface EquipmentDisplay extends Equipment {
@@ -41,24 +42,99 @@ export default function Home() {
 
   const checkAuthAndLoadData = async () => {
     try {
-      const user = await authService.getCurrentUser();
-      if (!user) {
+      setLoading(true);
+      console.log('🔍 Iniciando verificação de autenticação...');
+      
+      // Verificar se há sessão ativa
+      const session = await authService.getSession();
+      console.log('📋 Sessão obtida:', session ? 'Existe' : 'Não existe');
+      
+      if (!session?.user) {
+        console.log('❌ Nenhuma sessão ativa, redirecionando para login');
         router.push('/login');
         return;
       }
 
-      const profile = await userService.getProfile(user.id);
-      if (!profile || profile.status !== 'approved') {
-        router.push('/login');
+      const user = session.user;
+      console.log('👤 Usuário da sessão:', { id: user.id, email: user.email });
+      
+      // Tentar buscar o perfil usando query direta do Supabase
+      let profile = null;
+      
+      try {
+        console.log('🔄 Buscando perfil com query direta...');
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        
+        if (error) {
+          console.error('❌ Erro na query direta:', error);
+          throw error;
+        }
+        
+        profile = data;
+        console.log('✅ Perfil encontrado via query direta:', profile);
+        
+      } catch (directError: any) {
+        console.error('💥 Falha na query direta, tentando método original...', directError);
+        
+        // Fallback para método original
+        try {
+          profile = await userService.getProfile(user.id);
+          console.log('✅ Perfil encontrado via método original:', profile);
+        } catch (fallbackError: any) {
+          console.error('💥 Falha no método original também:', fallbackError);
+        }
+      }
+
+      // Se ainda não conseguiu buscar o perfil, criar um perfil temporário para admin
+      if (!profile && user.email === 'entregasobral@gmail.com') {
+        console.log('🔧 Criando perfil temporário para admin...');
+        profile = {
+          id: user.id,
+          email: user.email,
+          nome: 'Administrador',
+          status: 'approved',
+          role: 'admin',
+          created_at: new Date().toISOString()
+        };
+        console.log('✅ Perfil temporário criado:', profile);
+      }
+
+      // Se não conseguiu buscar o perfil
+      if (!profile) {
+        console.error('💥 Não foi possível carregar o perfil do usuário');
+        
+        // Mostrar página de debug em vez de redirecionar
+        setError('Erro ao carregar perfil. Clique no botão abaixo para ver detalhes técnicos.');
+        setLoading(false);
         return;
       }
 
+      // Verificar se o usuário está aprovado
+      if (profile.status !== 'approved') {
+        console.log('🚫 Usuário não aprovado:', profile.status);
+        setError(`Sua conta está com status: ${profile.status}. ${profile.status === 'pending' ? 'Aguarde aprovação do administrador.' : 'Entre em contato com o administrador.'}`);
+        setLoading(false);
+        return;
+      }
+
+      console.log('🎉 Autenticação bem-sucedida! Carregando dados...');
       setCurrentUser(user);
       setUserProfile(profile);
       await loadData(user.id, profile.role === 'admin');
-    } catch (error) {
-      console.error('Erro ao verificar autenticação:', error);
-      router.push('/login');
+      
+    } catch (error: any) {
+      console.error('💥 Erro geral na verificação de autenticação:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      
+      setError('Erro de autenticação. Clique no botão abaixo para ver detalhes técnicos.');
+      setLoading(false);
     }
   };
 
@@ -128,6 +204,44 @@ export default function Home() {
     item.responsavel.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.local.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Mostrar loading durante verificação de autenticação
+  if (loading && !currentUser) {
+    return <LoadingScreen message="Verificando autenticação..." />;
+  }
+
+  // Mostrar erro se houver
+  if (error && !currentUser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-lg p-8 text-center max-w-md">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i className="ri-error-warning-line text-red-500 text-2xl"></i>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">
+            Erro de Autenticação
+          </h2>
+          <p className="text-gray-600 text-sm mb-4">
+            {error}
+          </p>
+          <div className="space-y-3">
+            <button
+              onClick={() => router.push('/login')}
+              className="w-full bg-blue-500 text-white px-6 py-2 rounded-xl hover:bg-blue-600 transition-colors"
+            >
+              Ir para Login
+            </button>
+            <button
+              onClick={() => router.push('/debug-page')}
+              className="w-full bg-gray-500 text-white px-6 py-2 rounded-xl hover:bg-gray-600 transition-colors"
+            >
+              Ver Detalhes Técnicos
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">

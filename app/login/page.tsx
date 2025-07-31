@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { authService } from '../../lib/supabase';
+import { authService, userService } from '../../lib/supabase';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,9 +17,21 @@ export default function LoginPage() {
   // Verificar se já está logado
   useEffect(() => {
     const checkAuth = async () => {
-      const session = await authService.getSession();
-      if (session) {
-        router.push('/');
+      try {
+        const session = await authService.getSession();
+        if (session?.user) {
+          // Verificar se o usuário tem perfil aprovado antes de redirecionar
+          const profile = await authService.getCurrentUser().then(user => 
+            user ? userService.getProfile(user.id) : null
+          );
+          
+          if (profile && profile.status === 'approved') {
+            router.push('/');
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao verificar autenticação:', error);
+        // Se houver erro, permanecer na página de login
       }
     };
     checkAuth();
