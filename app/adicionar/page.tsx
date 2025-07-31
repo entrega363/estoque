@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { equipmentService } from '../../lib/supabase';
 
 interface NewEquipment {
   codigo: string;
@@ -39,44 +40,64 @@ export default function AdicionarPage() {
     setIsSubmitting(true);
 
     try {
-      // Criar novo equipamento com ID único
-      const newEquipment = {
-        id: Date.now().toString(),
-        codigo: formData.codigo,
-        nome: formData.nome,
-        quantidade: formData.quantidade,
-        categoria: formData.categoria,
-        foto: formData.foto
-      };
-
-      // Carregar equipamentos existentes do localStorage
-      const existingEquipamentos = JSON.parse(localStorage.getItem('estoque-equipamentos') || '[]');
-      
-      // Verificar se já existe um equipamento com o mesmo código
-      const codeExists = existingEquipamentos.some((eq: any) => eq.codigo === formData.codigo);
+      // Verificar se o código já existe
+      const codeExists = await equipmentService.checkCodeExists(formData.codigo);
       if (codeExists) {
         alert('Já existe um equipamento com este código!');
         setIsSubmitting(false);
         return;
       }
 
-      // Adicionar novo equipamento
-      const updatedEquipamentos = [...existingEquipamentos, newEquipment];
-      
-      // Salvar no localStorage
-      localStorage.setItem('estoque-equipamentos', JSON.stringify(updatedEquipamentos));
+      // Criar novo equipamento
+      await equipmentService.create({
+        codigo: formData.codigo,
+        nome: formData.nome,
+        quantidade: formData.quantidade,
+        categoria: formData.categoria,
+        foto: formData.foto
+      });
 
-      // Simular delay para melhor UX
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       setShowSuccess(true);
       setTimeout(() => {
         router.push('/');
       }, 2000);
+
     } catch (error) {
       console.error('Erro ao salvar equipamento:', error);
-      alert('Erro ao salvar equipamento. Tente novamente.');
-      setIsSubmitting(false);
+      
+      // Fallback para localStorage se Supabase falhar
+      try {
+        const newEquipment = {
+          id: Date.now().toString(),
+          codigo: formData.codigo,
+          nome: formData.nome,
+          quantidade: formData.quantidade,
+          categoria: formData.categoria,
+          foto: formData.foto
+        };
+
+        const existingEquipamentos = JSON.parse(localStorage.getItem('estoque-equipamentos') || '[]');
+        const codeExists = existingEquipamentos.some((eq: any) => eq.codigo === formData.codigo);
+        
+        if (codeExists) {
+          alert('Já existe um equipamento com este código!');
+          setIsSubmitting(false);
+          return;
+        }
+
+        const updatedEquipamentos = [...existingEquipamentos, newEquipment];
+        localStorage.setItem('estoque-equipamentos', JSON.stringify(updatedEquipamentos));
+
+        setShowSuccess(true);
+        setTimeout(() => {
+          router.push('/');
+        }, 2000);
+
+      } catch (localError) {
+        console.error('Erro ao salvar no localStorage:', localError);
+        alert('Erro ao salvar equipamento. Tente novamente.');
+        setIsSubmitting(false);
+      }
     }
   };
 

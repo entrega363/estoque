@@ -3,17 +3,14 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { equipmentService, usedEquipmentService, Equipment, EquipmentUsed } from '../lib/supabase';
 
-interface Equipment {
-  id: string;
-  codigo: string;
-  nome: string;
-  quantidade: number;
-  categoria: string;
+// Adaptar interface para compatibilidade
+interface EquipmentDisplay extends Equipment {
   foto?: string;
 }
 
-interface EquipmentUsed {
+interface EquipmentUsedDisplay {
   id: string;
   codigo: string;
   nome: string;
@@ -21,75 +18,82 @@ interface EquipmentUsed {
   local: string;
   responsavel: string;
   dataUso: string;
+  data_uso: string;
   observacoes: string;
 }
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'estoque' | 'utilizados'>('estoque');
   const [equipamentos, setEquipamentos] = useState<Equipment[]>([]);
-  const [utilizados, setUtilizados] = useState<EquipmentUsed[]>([]);
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [utilizados, setUtilizados] = useState<EquipmentUsedDisplay[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Carregar dados do localStorage
+  // Carregar dados do Supabase
   useEffect(() => {
-    const loadData = () => {
-      try {
-        // Carregar equipamentos
-        const savedEquipamentos = localStorage.getItem('estoque-equipamentos');
-        if (savedEquipamentos) {
-          setEquipamentos(JSON.parse(savedEquipamentos));
-        } else {
-          // Dados iniciais apenas se não houver dados salvos
-          const initialEquipamentos = [
-            { id: '1', codigo: 'ATT-X200304', nome: 'Notebook Dell Inspiron', quantidade: 5, categoria: 'Informatica' },
-            { id: '2', codigo: 'ATT-X200305', nome: 'Monitor Samsung 24"', quantidade: 8, categoria: 'Informatica' },
-            { id: '3', codigo: 'ATT-X200306', nome: 'Mouse Logitech', quantidade: 12, categoria: 'Perifericos' },
-            { id: '4', codigo: 'ATT-X200307', nome: 'Teclado Mecânico', quantidade: 7, categoria: 'Perifericos' },
-            { id: '5', codigo: 'ATT-X200308', nome: 'Impressora HP LaserJet', quantidade: 3, categoria: 'Impressao' },
-          ];
-          setEquipamentos(initialEquipamentos);
-          localStorage.setItem('estoque-equipamentos', JSON.stringify(initialEquipamentos));
-        }
-
-        // Carregar utilizados
-        const savedUtilizados = localStorage.getItem('estoque-utilizados');
-        if (savedUtilizados) {
-          setUtilizados(JSON.parse(savedUtilizados));
-        } else {
-          // Dados iniciais apenas se não houver dados salvos
-          const initialUtilizados = [
-            {
-              id: '1',
-              codigo: 'ATT-X200301',
-              nome: 'Notebook Dell XPS',
-              quantidade: 1,
-              local: 'Sala de Reunião A',
-              responsavel: 'João Silva',
-              dataUso: '2024-01-15',
-              observacoes: 'Para apresentação cliente'
-            },
-            {
-              id: '2',
-              codigo: 'ATT-X200302',
-              nome: 'Projetor Epson',
-              quantidade: 1,
-              local: 'Auditório Principal',
-              responsavel: 'Maria Santos',
-              dataUso: '2024-01-14',
-              observacoes: 'Evento corporativo'
-            },
-          ];
-          setUtilizados(initialUtilizados);
-          localStorage.setItem('estoque-utilizados', JSON.stringify(initialUtilizados));
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados do localStorage:', error);
-      }
-    };
-
     loadData();
   }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Carregar equipamentos e utilizados em paralelo
+      const [equipamentosData, utilizadosData] = await Promise.all([
+        equipmentService.getAll(),
+        usedEquipmentService.getAll()
+      ]);
+
+      setEquipamentos(equipamentosData);
+      
+      // Adaptar dados dos utilizados para o formato esperado
+      const utilizadosAdaptados = utilizadosData.map(item => ({
+        ...item,
+        dataUso: item.data_uso
+      }));
+      setUtilizados(utilizadosAdaptados);
+
+    } catch (err) {
+      console.error('Erro ao carregar dados:', err);
+      setError('Erro ao carregar dados. Usando dados locais.');
+      
+      // Fallback para dados locais se o Supabase falhar
+      setEquipamentos([
+        { id: '1', codigo: 'ATT-X200304', nome: 'Notebook Dell Inspiron', quantidade: 5, categoria: 'Informatica' },
+        { id: '2', codigo: 'ATT-X200305', nome: 'Monitor Samsung 24"', quantidade: 8, categoria: 'Informatica' },
+        { id: '3', codigo: 'ATT-X200306', nome: 'Mouse Logitech', quantidade: 12, categoria: 'Perifericos' },
+        { id: '4', codigo: 'ATT-X200307', nome: 'Teclado Mecânico', quantidade: 7, categoria: 'Perifericos' },
+        { id: '5', codigo: 'ATT-X200308', nome: 'Impressora HP LaserJet', quantidade: 3, categoria: 'Impressao' },
+      ]);
+
+      setUtilizados([
+        {
+          id: '1',
+          codigo: 'ATT-X200301',
+          nome: 'Notebook Dell XPS',
+          quantidade: 1,
+          local: 'Sala de Reunião A',
+          responsavel: 'João Silva',
+          data_uso: '2024-01-15',
+          observacoes: 'Para apresentação cliente'
+        },
+        {
+          id: '2',
+          codigo: 'ATT-X200302',
+          nome: 'Projetor Epson',
+          quantidade: 1,
+          local: 'Auditório Principal',
+          responsavel: 'Maria Santos',
+          data_uso: '2024-01-14',
+          observacoes: 'Evento corporativo'
+        },
+      ].map(item => ({ ...item, dataUso: item.data_uso })));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const totalEstoque = equipamentos.reduce((sum, item) => sum + item.quantidade, 0);
   const totalUtilizados = utilizados.reduce((sum, item) => sum + item.quantidade, 0);
@@ -233,7 +237,7 @@ export default function Home() {
                   </div>
                   <div className="flex items-center gap-2">
                     <i className="ri-calendar-line text-gray-400"></i>
-                    <span className="text-gray-600">Data: {new Date(item.dataUso).toLocaleDateString('pt-BR')}</span>
+                    <span className="text-gray-600">Data: {new Date(item.dataUso || item.data_uso).toLocaleDateString('pt-BR')}</span>
                   </div>
                   {item.observacoes && (
                     <div className="flex items-start gap-2">
