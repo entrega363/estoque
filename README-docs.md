@@ -1,4 +1,4 @@
-# Sistema de Controle de Estoque
+# Sistema de Controle de Estoque - Documentação
 
 Um sistema moderno e responsivo para gerenciamento de equipamentos e controle de estoque, desenvolvido com Next.js e React.
 
