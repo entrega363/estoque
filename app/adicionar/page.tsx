@@ -10,6 +10,7 @@ interface NewEquipment {
   nome: string;
   quantidade: number;
   categoria: string;
+  foto?: string;
 }
 
 export default function AdicionarPage() {
@@ -22,6 +23,7 @@ export default function AdicionarPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   const categorias = [
     'Informatica',
@@ -59,6 +61,42 @@ export default function AdicionarPage() {
     setFormData(prev => ({
       ...prev,
       codigo: `${prefix}${timestamp}`
+    }));
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Verificar se é uma imagem
+      if (!file.type.startsWith('image/')) {
+        alert('Por favor, selecione apenas arquivos de imagem.');
+        return;
+      }
+      
+      // Verificar tamanho (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('A imagem deve ter no máximo 5MB.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        setPhotoPreview(result);
+        setFormData(prev => ({
+          ...prev,
+          foto: result
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removePhoto = () => {
+    setPhotoPreview(null);
+    setFormData(prev => ({
+      ...prev,
+      foto: undefined
     }));
   };
 
@@ -190,14 +228,94 @@ export default function AdicionarPage() {
               </div>
             </div>
 
+            {/* Foto do Equipamento */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Foto do Equipamento (Opcional)
+              </label>
+              
+              {!photoPreview ? (
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                    id="photo-upload"
+                  />
+                  <label
+                    htmlFor="photo-upload"
+                    className="w-full h-32 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-green-400 hover:bg-green-50 transition-colors"
+                  >
+                    <i className="ri-camera-line text-3xl text-gray-400 mb-2"></i>
+                    <p className="text-sm text-gray-600 font-medium">Clique para adicionar foto</p>
+                    <p className="text-xs text-gray-400 mt-1">PNG, JPG até 5MB</p>
+                  </label>
+                </div>
+              ) : (
+                <div className="relative">
+                  <div className="w-full h-32 bg-gray-100 rounded-xl overflow-hidden">
+                    <img
+                      src={photoPreview}
+                      alt="Preview do equipamento"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={removePhoto}
+                    className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors !rounded-button"
+                    title="Remover foto"
+                  >
+                    <i className="ri-close-line text-sm"></i>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById('photo-upload-replace')?.click()}
+                    className="absolute bottom-2 right-2 px-3 py-1 bg-white bg-opacity-90 text-gray-700 text-xs rounded-full hover:bg-opacity-100 transition-colors !rounded-button"
+                  >
+                    Alterar
+                  </button>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                    id="photo-upload-replace"
+                  />
+                </div>
+              )}
+            </div>
+
             {/* Preview Card */}
             <div className="bg-gray-50 rounded-xl p-4">
               <p className="text-sm font-medium text-gray-700 mb-3">Pré-visualização:</p>
               <div className="bg-white rounded-xl shadow-sm p-4">
+                {/* Foto na pré-visualização */}
+                {photoPreview && (
+                  <div className="mb-3">
+                    <div className="w-full h-24 bg-gray-100 rounded-lg overflow-hidden">
+                      <img
+                        src={photoPreview}
+                        alt="Preview do equipamento"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
+                
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                      <i className="ri-computer-line text-green-500"></i>
+                      {photoPreview ? (
+                        <img
+                          src={photoPreview}
+                          alt="Ícone do equipamento"
+                          className="w-full h-full object-cover rounded-xl"
+                        />
+                      ) : (
+                        <i className="ri-computer-line text-green-500"></i>
+                      )}
                     </div>
                     <div>
                       <h3 className="font-medium text-gray-800">{formData.nome || 'Nome do equipamento'}</h3>
