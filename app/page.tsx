@@ -43,85 +43,46 @@ export default function Home() {
   const checkAuthAndLoadData = async () => {
     try {
       setLoading(true);
-      console.log('🔍 Iniciando verificação de autenticação...');
+      console.log('🔍 VERSÃO SIMPLIFICADA - Verificando autenticação...');
       
       // Verificar se há sessão ativa
       const session = await authService.getSession();
-      console.log('📋 Sessão obtida:', session ? 'Existe' : 'Não existe');
+      console.log('📋 Sessão:', session ? 'Existe' : 'Não existe');
       
       if (!session?.user) {
-        console.log('❌ Nenhuma sessão ativa, redirecionando para login');
+        console.log('❌ Sem sessão - redirecionando para login');
+        setLoading(false);
         router.push('/login');
         return;
       }
 
       const user = session.user;
-      console.log('👤 Usuário da sessão:', { id: user.id, email: user.email });
+      console.log('👤 Usuário logado:', user.email);
       
-      // Tentar buscar o perfil usando query direta do Supabase
-      let profile = null;
+      // SIMPLIFICADO: Criar perfil básico para qualquer usuário logado
+      const profile = {
+        id: user.id,
+        email: user.email,
+        nome: user.email === 'entregasobral@gmail.com' ? 'Administrador' : user.email.split('@')[0],
+        status: 'approved', // Sempre aprovado
+        role: user.email === 'entregasobral@gmail.com' ? 'admin' : 'user',
+        created_at: new Date().toISOString()
+      };
       
-      try {
-        console.log('🔄 Buscando perfil com query direta...');
-        const { data, error } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-        
-        if (error) {
-          console.error('❌ Erro na query direta:', error);
-          throw error;
-        }
-        
-        profile = data;
-        console.log('✅ Perfil encontrado via query direta:', profile);
-        
-      } catch (directError: any) {
-        console.error('💥 Falha na query direta, tentando método original...', directError);
-        
-        // Fallback para método original
-        try {
-          profile = await userService.getProfile(user.id);
-          console.log('✅ Perfil encontrado via método original:', profile);
-        } catch (fallbackError: any) {
-          console.error('💥 Falha no método original também:', fallbackError);
-        }
-      }
-
-      // Se não conseguiu buscar o perfil, criar um perfil temporário
-      if (!profile) {
-        console.log('🔧 Criando perfil temporário para usuário...');
-        profile = {
-          id: user.id,
-          email: user.email,
-          nome: user.email.split('@')[0], // Usar parte do email como nome
-          status: 'approved', // Forçar como aprovado temporariamente
-          role: user.email === 'entregasobral@gmail.com' ? 'admin' : 'user',
-          created_at: new Date().toISOString()
-        };
-        console.log('✅ Perfil temporário criado:', profile);
-      }
-
-      // TEMPORARIAMENTE: Forçar todos os usuários como aprovados para resolver o loop
-      if (profile.status !== 'approved') {
-        console.log('🔧 Forçando status aprovado temporariamente para:', profile.email);
-        profile.status = 'approved';
-      }
-
-      console.log('🎉 Autenticação bem-sucedida! Carregando dados...');
+      console.log('✅ Perfil criado:', profile);
+      
       setCurrentUser(user);
       setUserProfile(profile);
+      
+      // Carregar dados
+      console.log('📊 Carregando dados...');
       await loadData(user.id, profile.role === 'admin');
       
-    } catch (error: any) {
-      console.error('💥 Erro geral na verificação de autenticação:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
+      console.log('🎉 Tudo carregado com sucesso!');
       
-      setError('Erro de autenticação. Clique no botão abaixo para ver detalhes técnicos.');
+    } catch (error: any) {
+      console.error('💥 Erro:', error);
+      setError('Erro de autenticação. Tente novamente.');
       setLoading(false);
     }
   };

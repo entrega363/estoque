@@ -14,23 +14,21 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Verificar se já está logado
+  // SIMPLIFICADO: Verificar se já está logado sem verificações complexas
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        console.log('🔍 LOGIN - Verificando se já está logado...');
         const session = await authService.getSession();
+        
         if (session?.user) {
-          // Verificar se o usuário tem perfil aprovado antes de redirecionar
-          const profile = await authService.getCurrentUser().then(user => 
-            user ? userService.getProfile(user.id) : null
-          );
-          
-          if (profile && profile.status === 'approved') {
-            router.push('/');
-          }
+          console.log('✅ LOGIN - Usuário já logado, redirecionando...');
+          router.push('/');
+        } else {
+          console.log('❌ LOGIN - Nenhuma sessão ativa');
         }
       } catch (error) {
-        console.error('Erro ao verificar autenticação:', error);
+        console.error('💥 LOGIN - Erro ao verificar:', error);
         // Se houver erro, permanecer na página de login
       }
     };
