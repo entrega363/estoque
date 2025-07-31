@@ -34,6 +34,7 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [authChecked, setAuthChecked] = useState(false); // Flag para evitar loop
 
   // Verificar autenticação e carregar dados
   useEffect(() => {
@@ -41,9 +42,19 @@ export default function Home() {
   }, []);
 
   const checkAuthAndLoadData = async () => {
+    // Evitar loop de redirecionamento
+    if (authChecked) {
+      console.log('🔄 Verificação já realizada, evitando loop');
+      return;
+    }
+    
     try {
       setLoading(true);
-      console.log('🔍 VERSÃO SIMPLIFICADA - Verificando autenticação...');
+      setAuthChecked(true);
+      console.log('🔍 ANTI-LOOP - Verificando autenticação...');
+      
+      // Marcar que estamos na página principal para evitar loop
+      localStorage.setItem('currentPage', 'home');
       
       // Verificar se há sessão ativa
       const session = await authService.getSession();
@@ -51,13 +62,21 @@ export default function Home() {
       
       if (!session?.user) {
         console.log('❌ Sem sessão - redirecionando para login');
+        localStorage.setItem('redirectFrom', 'home');
         setLoading(false);
-        router.push('/login');
+        
+        // Aguardar um pouco antes de redirecionar
+        setTimeout(() => {
+          router.push('/login');
+        }, 500);
         return;
       }
 
       const user = session.user;
       console.log('👤 Usuário logado:', user.email);
+      
+      // Limpar flags de redirecionamento
+      localStorage.removeItem('redirectFrom');
       
       // SIMPLIFICADO: Criar perfil básico para qualquer usuário logado
       const profile = {

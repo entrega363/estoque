@@ -14,26 +14,14 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // SIMPLIFICADO: Verificar se já está logado sem verificações complexas
+  // DESABILITADO: Não verificar se já está logado para evitar loop
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        console.log('🔍 LOGIN - Verificando se já está logado...');
-        const session = await authService.getSession();
-        
-        if (session?.user) {
-          console.log('✅ LOGIN - Usuário já logado, redirecionando...');
-          router.push('/');
-        } else {
-          console.log('❌ LOGIN - Nenhuma sessão ativa');
-        }
-      } catch (error) {
-        console.error('💥 LOGIN - Erro ao verificar:', error);
-        // Se houver erro, permanecer na página de login
-      }
-    };
-    checkAuth();
-  }, [router]);
+    console.log('🔍 LOGIN - Página de login carregada (sem verificação automática)');
+    localStorage.setItem('currentPage', 'login');
+    
+    // Limpar qualquer flag de redirecionamento
+    localStorage.removeItem('redirectFrom');
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
