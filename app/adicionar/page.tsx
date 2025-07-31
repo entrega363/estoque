@@ -1,10 +1,10 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { equipmentService } from '../../lib/supabase';
+import { equipmentServiceAuth, authService, userService } from '../../lib/supabase';
 
 interface NewEquipment {
   codigo: string;
@@ -25,6 +25,36 @@ export default function AdicionarPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Verificar autenticação
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const user = await authService.getCurrentUser();
+      if (!user) {
+        router.push('/login');
+        return;
+      }
+
+      const profile = await userService.getProfile(user.id);
+      if (!profile || profile.status !== 'approved') {
+        router.push('/login');
+        return;
+      }
+
+      setCurrentUser(user);
+    } catch (error) {
+      console.error('Erro ao verificar autenticação:', error);
+      router.push('/login');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const categorias = [
     'Informatica',
@@ -39,22 +69,29 @@ export default function AdicionarPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    if (!currentUser) {
+      alert('Usuário não autenticado');
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      // Verificar se o código já existe
-      const codeExists = await equipmentService.checkCodeExists(formData.codigo);
+      // Verificar se o código já existe para este usuário
+      const codeExists = await equipmentServiceAuth.checkCodeExistsForUser(formData.codigo, currentUser.id);
       if (codeExists) {
         alert('Já existe um equipamento com este código!');
         setIsSubmitting(false);
         return;
       }
 
-      // Criar novo equipamento
-      await equipmentService.create({
+      // Criar novo equipamento com user_id
+      await equipmentServiceAuth.create({
         codigo: formData.codigo,
         nome: formData.nome,
         quantidade: formData.quantidade,
         categoria: formData.categoria,
-        foto: formData.foto
+        foto: formData.foto,
+        user_id: currentUser.id
       });
 
       setShowSuccess(true);
@@ -73,11 +110,12 @@ export default function AdicionarPage() {
           nome: formData.nome,
           quantidade: formData.quantidade,
           categoria: formData.categoria,
-          foto: formData.foto
+          foto: formData.foto,
+          user_id: currentUser.id
         };
 
         const existingEquipamentos = JSON.parse(localStorage.getItem('estoque-equipamentos') || '[]');
-        const codeExists = existingEquipamentos.some((eq: any) => eq.codigo === formData.codigo);
+        const codeExists = existingEquipamentos.some((eq: any) => eq.codigo === formData.codigo && eq.user_id === currentUser.id);
         
         if (codeExists) {
           alert('Já existe um equipamento com este código!');
@@ -153,6 +191,17 @@ export default function AdicionarPage() {
       foto: undefined
     }));
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-green-200 border-t-green-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Verificando autenticação...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">

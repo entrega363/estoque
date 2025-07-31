@@ -3,7 +3,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { equipmentService, usedEquipmentService, Equipment, EquipmentUsed } from '../lib/supabase';
+import { useRouter } from 'next/navigation';
+import { equipmentService, usedEquipmentService, Equipment, EquipmentUsed, authService, userService, equipmentServiceAuth } from '../lib/supabase';
 
 // Adaptar interface para compatibilidade
 interface EquipmentDisplay extends Equipment {
@@ -23,28 +24,56 @@ interface EquipmentUsedDisplay {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'estoque' | 'utilizados'>('estoque');
   const [equipamentos, setEquipamentos] = useState<Equipment[]>([]);
   const [utilizados, setUtilizados] = useState<EquipmentUsedDisplay[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
-  // Carregar dados do Supabase
+  // Verificar autenticação e carregar dados
   useEffect(() => {
-    loadData();
+    checkAuthAndLoadData();
   }, []);
 
-  const loadData = async () => {
+  const checkAuthAndLoadData = async () => {
+    try {
+      const user = await authService.getCurrentUser();
+      if (!user) {
+        router.push('/login');
+        return;
+      }
+
+      const profile = await userService.getProfile(user.id);
+      if (!profile || profile.status !== 'approved') {
+        router.push('/login');
+        return;
+      }
+
+      setCurrentUser(user);
+      setUserProfile(profile);
+      await loadData(user.id, profile.role === 'admin');
+    } catch (error) {
+      console.error('Erro ao verificar autenticação:', error);
+      router.push('/login');
+    }
+  };
+
+  const loadData = async (userId: string, isAdmin: boolean) => {
     try {
       setLoading(true);
       setError(null);
 
-      // Carregar equipamentos e utilizados em paralelo
-      const [equipamentosData, utilizadosData] = await Promise.all([
-        equipmentService.getAll(),
-        usedEquipmentService.getAll()
-      ]);
+      // Carregar equipamentos baseado no tipo de usuário
+      const equipamentosData = isAdmin 
+        ? await equipmentServiceAuth.getAllForAdmin()
+        : await equipmentServiceAuth.getByUser(userId);
+
+      // Carregar equipamentos utilizados
+      const utilizadosData = await usedEquipmentService.getAll();
 
       setEquipamentos(equipamentosData);
       
@@ -57,41 +86,31 @@ export default function Home() {
 
     } catch (err) {
       console.error('Erro ao carregar dados:', err);
-      setError('Erro ao carregar dados. Usando dados locais.');
+      setError('Erro ao carregar dados do banco.');
       
-      // Fallback para dados locais se o Supabase falhar
-      setEquipamentos([
-        { id: '1', codigo: 'ATT-X200304', nome: 'Notebook Dell Inspiron', quantidade: 5, categoria: 'Informatica' },
-        { id: '2', codigo: 'ATT-X200305', nome: 'Monitor Samsung 24"', quantidade: 8, categoria: 'Informatica' },
-        { id: '3', codigo: 'ATT-X200306', nome: 'Mouse Logitech', quantidade: 12, categoria: 'Perifericos' },
-        { id: '4', codigo: 'ATT-X200307', nome: 'Teclado Mecânico', quantidade: 7, categoria: 'Perifericos' },
-        { id: '5', codigo: 'ATT-X200308', nome: 'Impressora HP LaserJet', quantidade: 3, categoria: 'Impressao' },
-      ]);
-
-      setUtilizados([
-        {
-          id: '1',
-          codigo: 'ATT-X200301',
-          nome: 'Notebook Dell XPS',
-          quantidade: 1,
-          local: 'Sala de Reunião A',
-          responsavel: 'João Silva',
-          data_uso: '2024-01-15',
-          observacoes: 'Para apresentação cliente'
-        },
-        {
-          id: '2',
-          codigo: 'ATT-X200302',
-          nome: 'Projetor Epson',
-          quantidade: 1,
-          local: 'Auditório Principal',
-          responsavel: 'Maria Santos',
-          data_uso: '2024-01-14',
-          observacoes: 'Evento corporativo'
-        },
-      ].map(item => ({ ...item, dataUso: item.data_uso })));
+      // Fallback para localStorage se Supabase falhar
+      try {
+        const localEquipamentos = JSON.parse(localStorage.getItem('estoque-equipamentos') || '[]');
+        const localUtilizados = JSON.parse(localStorage.getItem('estoque-utilizados') || '[]');
+        
+        setEquipamentos(localEquipamentos);
+        setUtilizados(localUtilizados.map((item: any) => ({ ...item, dataUso: item.data_uso || item.dataUso })));
+      } catch (localError) {
+        console.error('Erro ao carregar dados locais:', localError);
+        setEquipamentos([]);
+        setUtilizados([]);
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await authService.signOut();
+      router.push('/login');
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
     }
   };
 
@@ -115,6 +134,46 @@ export default function Home() {
       <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+          {/* User Info & Actions */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                userProfile?.role === 'admin' ? 'bg-purple-100' : 'bg-blue-100'
+              }`}>
+                <i className={`text-xl ${
+                  userProfile?.role === 'admin' ? 'ri-admin-line text-purple-500' : 'ri-user-line text-blue-500'
+                }`}></i>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-800 flex items-center gap-2">
+                  {userProfile?.nome}
+                  {userProfile?.role === 'admin' && (
+                    <span className="px-2 py-1 bg-purple-100 text-purple-600 text-xs rounded-full">
+                      Admin
+                    </span>
+                  )}
+                </p>
+                <p className="text-xs text-gray-500">{userProfile?.email}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {userProfile?.role === 'admin' && (
+                <Link href="/admin">
+                  <button className="p-2 bg-purple-100 text-purple-600 rounded-xl hover:bg-purple-200 transition-colors" title="Painel Admin">
+                    <i className="ri-admin-line text-lg"></i>
+                  </button>
+                </Link>
+              )}
+              <button
+                onClick={handleLogout}
+                className="p-2 bg-red-100 text-red-600 rounded-xl hover:bg-red-200 transition-colors"
+                title="Sair"
+              >
+                <i className="ri-logout-circle-line text-lg"></i>
+              </button>
+            </div>
+          </div>
+
           <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">
             Sistema de Controle de Estoque
           </h1>
