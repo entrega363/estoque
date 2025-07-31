@@ -23,6 +23,8 @@ export default function LoginPage() {
     localStorage.removeItem('redirectFrom');
   }, []);
 
+  const [loginSuccess, setLoginSuccess] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -30,12 +32,19 @@ export default function LoginPage() {
 
     try {
       await authService.signIn(formData.email, formData.password);
-      router.push('/');
+      console.log('✅ Login realizado com sucesso!');
+      setLoginSuccess(true);
+      // NÃO redirecionar automaticamente para evitar loop
     } catch (error: any) {
       setError(error.message || 'Erro ao fazer login');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const goToHome = () => {
+    console.log('🏠 Navegando manualmente para a página principal...');
+    router.push('/');
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,6 +78,23 @@ export default function LoginPage() {
                 <i className="ri-error-warning-line text-red-500 text-xl"></i>
                 <p className="text-red-800 text-sm">{error}</p>
               </div>
+            </div>
+          )}
+
+          {/* Success Message */}
+          {loginSuccess && (
+            <div className="mb-6 p-4 bg-green-100 border border-green-200 rounded-xl">
+              <div className="flex items-center gap-3 mb-3">
+                <i className="ri-check-circle-line text-green-500 text-xl"></i>
+                <p className="text-green-800 text-sm">Login realizado com sucesso!</p>
+              </div>
+              <button
+                onClick={goToHome}
+                className="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2"
+              >
+                <i className="ri-home-line"></i>
+                Ir para o Sistema
+              </button>
             </div>
           )}
 

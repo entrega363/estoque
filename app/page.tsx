@@ -61,14 +61,9 @@ export default function Home() {
       console.log('📋 Sessão:', session ? 'Existe' : 'Não existe');
       
       if (!session?.user) {
-        console.log('❌ Sem sessão - redirecionando para login');
-        localStorage.setItem('redirectFrom', 'home');
+        console.log('❌ Sem sessão - mostrando mensagem para fazer login');
+        setError('Você precisa fazer login para acessar o sistema.');
         setLoading(false);
-        
-        // Aguardar um pouco antes de redirecionar
-        setTimeout(() => {
-          router.push('/login');
-        }, 500);
         return;
       }
 
