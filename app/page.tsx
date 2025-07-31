@@ -35,8 +35,16 @@ export default function Home() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
 
-  // NOVA VERSÃO SIMPLIFICADA - Verificar autenticação sem loop
+  // VERSÃO ANTI-LOOP DEFINITIVA - Só executa uma vez
   useEffect(() => {
+    // Verificar se já foi inicializado para evitar loop
+    const isInitialized = sessionStorage.getItem('appInitialized');
+    if (isInitialized) {
+      console.log('🔄 App já foi inicializado, evitando nova execução');
+      return;
+    }
+    
+    sessionStorage.setItem('appInitialized', 'true');
     initializeApp();
   }, []);
 
@@ -117,10 +125,24 @@ export default function Home() {
 
   const handleLogout = async () => {
     try {
+      console.log('🚪 Fazendo logout...');
+      
+      // Limpar sessionStorage para permitir nova inicialização
+      sessionStorage.removeItem('appInitialized');
+      
       await authService.signOut();
-      router.push('/login');
+      
+      // Aguardar um pouco antes de redirecionar
+      setTimeout(() => {
+        window.location.href = '/login'; // Usar window.location em vez de router.push
+      }, 1000);
+      
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
+      // Mesmo com erro, redirecionar
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 1000);
     }
   };
 
