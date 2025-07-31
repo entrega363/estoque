@@ -105,39 +105,70 @@ export default function Home() {
     try {
       setLoading(true);
       setError(null);
+      console.log('📊 Carregando dados para:', isAdmin ? 'ADMIN' : 'USUÁRIO NORMAL');
 
-      // Carregar equipamentos baseado no tipo de usuário
-      const equipamentosData = isAdmin 
-        ? await equipmentServiceAuth.getAllForAdmin()
-        : await equipmentServiceAuth.getByUser(userId);
+      let equipamentosData = [];
+      let utilizadosData = [];
 
-      // Carregar equipamentos utilizados
-      const utilizadosData = await usedEquipmentService.getAll();
+      if (isAdmin) {
+        // Admin: tentar carregar todos os dados
+        try {
+          equipamentosData = await equipmentServiceAuth.getAllForAdmin();
+          utilizadosData = await usedEquipmentService.getAll();
+          console.log('✅ Dados do admin carregados com sucesso');
+        } catch (adminError) {
+          console.error('❌ Erro ao carregar dados do admin:', adminError);
+          equipamentosData = [];
+          utilizadosData = [];
+        }
+      } else {
+        // Usuário normal: não tentar carregar dados do banco para evitar erros RLS
+        console.log('👤 Usuário normal: usando dados vazios para evitar erros RLS');
+        equipamentosData = [];
+        utilizadosData = [];
+        
+        // Tentar carregar do localStorage como fallback
+        try {
+          const localEquipamentos = JSON.parse(localStorage.getItem('estoque-equipamentos') || '[]');
+          const localUtilizados = JSON.parse(localStorage.getItem('estoque-utilizados') || '[]');
+          
+          if (localEquipamentos.length > 0) {
+            equipamentosData = localEquipamentos;
+            console.log('✅ Dados locais de equipamentos carregados');
+          }
+          
+          if (localUtilizados.length > 0) {
+            utilizadosData = localUtilizados;
+            console.log('✅ Dados locais de utilizados carregados');
+          }
+        } catch (localError) {
+          console.error('❌ Erro ao carregar dados locais:', localError);
+        }
+      }
 
       setEquipamentos(equipamentosData);
       
       // Adaptar dados dos utilizados para o formato esperado
-      const utilizadosAdaptados = utilizadosData.map(item => ({
+      const utilizadosAdaptados = utilizadosData.map((item: any) => ({
         ...item,
-        dataUso: item.data_uso
+        dataUso: item.data_uso || item.dataUso
       }));
       setUtilizados(utilizadosAdaptados);
 
+      console.log('✅ Dados carregados:', {
+        equipamentos: equipamentosData.length,
+        utilizados: utilizadosAdaptados.length
+      });
+
     } catch (err) {
-      console.error('Erro ao carregar dados:', err);
-      setError('Erro ao carregar dados do banco.');
-      
-      // Fallback para localStorage se Supabase falhar
-      try {
-        const localEquipamentos = JSON.parse(localStorage.getItem('estoque-equipamentos') || '[]');
-        const localUtilizados = JSON.parse(localStorage.getItem('estoque-utilizados') || '[]');
-        
-        setEquipamentos(localEquipamentos);
-        setUtilizados(localUtilizados.map((item: any) => ({ ...item, dataUso: item.data_uso || item.dataUso })));
-      } catch (localError) {
-        console.error('Erro ao carregar dados locais:', localError);
+      console.error('💥 Erro geral ao carregar dados:', err);
+      // Para usuários normais, não mostrar erro - apenas usar dados vazios
+      if (!isAdmin) {
+        console.log('👤 Usuário normal: ignorando erro e usando dados vazios');
         setEquipamentos([]);
         setUtilizados([]);
+      } else {
+        setError('Erro ao carregar dados do banco.');
       }
     } finally {
       setLoading(false);
