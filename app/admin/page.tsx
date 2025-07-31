@@ -70,6 +70,16 @@ export default function AdminPage() {
     }
   };
 
+  const handleRejectUser = async (userId: string) => {
+    try {
+      await userService.deactivateUser(userId);
+      await loadUsers();
+    } catch (error) {
+      console.error('Erro ao recusar usuário:', error);
+      alert('Erro ao recusar usuário');
+    }
+  };
+
   const handleActivateUser = async (userId: string) => {
     try {
       await userService.activateUser(userId);
@@ -255,13 +265,22 @@ export default function AdminPage() {
                   {user.role !== 'admin' && (
                     <div className="flex items-center gap-2">
                       {user.status === 'pending' && (
-                        <button
-                          onClick={() => handleApproveUser(user.id)}
-                          className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors flex items-center gap-2"
-                        >
-                          <i className="ri-check-line"></i>
-                          Aprovar
-                        </button>
+                        <>
+                          <button
+                            onClick={() => handleApproveUser(user.id)}
+                            className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors flex items-center gap-2"
+                          >
+                            <i className="ri-check-line"></i>
+                            Aprovar
+                          </button>
+                          <button
+                            onClick={() => handleRejectUser(user.id)}
+                            className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors flex items-center gap-2"
+                          >
+                            <i className="ri-close-line"></i>
+                            Recusar
+                          </button>
+                        </>
                       )}
                       {user.status === 'approved' && (
                         <button

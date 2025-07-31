@@ -163,18 +163,7 @@ export const authService = {
     
     if (error) throw error
     
-    // Criar perfil do usuário
-    if (data.user) {
-      await userService.createProfile({
-        id: data.user.id,
-        email: email,
-        nome: nome,
-        status: 'pending',
-        role: 'user',
-        created_at: new Date().toISOString()
-      })
-    }
-    
+    // O perfil será criado automaticamente pelo trigger
     return data
   },
 

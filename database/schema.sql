@@ -52,96 +52,34 @@ ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE equipamentos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE equipamentos_utilizados ENABLE ROW LEVEL SECURITY;
 
--- Políticas para user_profiles
-CREATE POLICY "Usuários podem ver seu próprio perfil" ON user_profiles
+-- Políticas para user_profiles (corrigidas para evitar recursão)
+CREATE POLICY "allow_select_own_profile" ON user_profiles
   FOR SELECT USING (auth.uid() = id);
 
-CREATE POLICY "Usuários podem atualizar seu próprio perfil" ON user_profiles
+CREATE POLICY "allow_insert_own_profile" ON user_profiles
+  FOR INSERT WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "allow_update_own_profile" ON user_profiles
   FOR UPDATE USING (auth.uid() = id);
 
-CREATE POLICY "Admins podem ver todos os perfis" ON user_profiles
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM user_profiles 
-      WHERE id = auth.uid() 
-      AND role = 'admin' 
-      AND status = 'approved'
-    )
-  );
-
-CREATE POLICY "Admins podem atualizar todos os perfis" ON user_profiles
-  FOR UPDATE USING (
-    EXISTS (
-      SELECT 1 FROM user_profiles 
-      WHERE id = auth.uid() 
-      AND role = 'admin' 
-      AND status = 'approved'
-    )
-  );
-
-CREATE POLICY "Permitir inserção de novos perfis" ON user_profiles
-  FOR INSERT WITH CHECK (true);
-
--- Políticas para equipamentos
-CREATE POLICY "Usuários podem ver seus próprios equipamentos" ON equipamentos
-  FOR SELECT USING (
-    user_id = auth.uid() AND 
-    EXISTS (
-      SELECT 1 FROM user_profiles 
-      WHERE id = auth.uid() 
-      AND status = 'approved'
-    )
-  );
-
-CREATE POLICY "Usuários podem inserir seus próprios equipamentos" ON equipamentos
-  FOR INSERT WITH CHECK (
-    user_id = auth.uid() AND 
-    EXISTS (
-      SELECT 1 FROM user_profiles 
-      WHERE id = auth.uid() 
-      AND status = 'approved'
-    )
-  );
-
-CREATE POLICY "Usuários podem atualizar seus próprios equipamentos" ON equipamentos
-  FOR UPDATE USING (
-    user_id = auth.uid() AND 
-    EXISTS (
-      SELECT 1 FROM user_profiles 
-      WHERE id = auth.uid() 
-      AND status = 'approved'
-    )
-  );
-
-CREATE POLICY "Usuários podem deletar seus próprios equipamentos" ON equipamentos
-  FOR DELETE USING (
-    user_id = auth.uid() AND 
-    EXISTS (
-      SELECT 1 FROM user_profiles 
-      WHERE id = auth.uid() 
-      AND status = 'approved'
-    )
-  );
-
-CREATE POLICY "Admins podem ver todos os equipamentos" ON equipamentos
+-- Política especial para admin (usando JWT diretamente)
+CREATE POLICY "allow_admin_all_profiles" ON user_profiles
   FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM user_profiles 
-      WHERE id = auth.uid() 
-      AND role = 'admin' 
-      AND status = 'approved'
-    )
+    auth.jwt() ->> 'email' = 'entregasobral@gmail.com'
   );
 
--- Políticas para equipamentos_utilizados
-CREATE POLICY "Usuários aprovados podem gerenciar equipamentos utilizados" ON equipamentos_utilizados
+-- Políticas para equipamentos (corrigidas)
+CREATE POLICY "allow_user_own_equipment" ON equipamentos
+  FOR ALL USING (user_id = auth.uid());
+
+CREATE POLICY "allow_admin_all_equipment" ON equipamentos
   FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM user_profiles 
-      WHERE id = auth.uid() 
-      AND status = 'approved'
-    )
+    auth.jwt() ->> 'email' = 'entregasobral@gmail.com'
   );
+
+-- Políticas para equipamentos_utilizados (corrigidas)
+CREATE POLICY "allow_authenticated_equipment_used" ON equipamentos_utilizados
+  FOR ALL USING (auth.uid() IS NOT NULL);
 
 -- Função para criar usuário admin automaticamente
 CREATE OR REPLACE FUNCTION create_admin_user()
