@@ -38,13 +38,46 @@ export default function AdicionarPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simular salvamento
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    setShowSuccess(true);
-    setTimeout(() => {
-      router.push('/');
-    }, 2000);
+    try {
+      // Criar novo equipamento com ID único
+      const newEquipment = {
+        id: Date.now().toString(),
+        codigo: formData.codigo,
+        nome: formData.nome,
+        quantidade: formData.quantidade,
+        categoria: formData.categoria,
+        foto: formData.foto
+      };
+
+      // Carregar equipamentos existentes do localStorage
+      const existingEquipamentos = JSON.parse(localStorage.getItem('estoque-equipamentos') || '[]');
+      
+      // Verificar se já existe um equipamento com o mesmo código
+      const codeExists = existingEquipamentos.some((eq: any) => eq.codigo === formData.codigo);
+      if (codeExists) {
+        alert('Já existe um equipamento com este código!');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Adicionar novo equipamento
+      const updatedEquipamentos = [...existingEquipamentos, newEquipment];
+      
+      // Salvar no localStorage
+      localStorage.setItem('estoque-equipamentos', JSON.stringify(updatedEquipamentos));
+
+      // Simular delay para melhor UX
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setShowSuccess(true);
+      setTimeout(() => {
+        router.push('/');
+      }, 2000);
+    } catch (error) {
+      console.error('Erro ao salvar equipamento:', error);
+      alert('Erro ao salvar equipamento. Tente novamente.');
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

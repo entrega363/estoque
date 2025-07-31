@@ -10,6 +10,7 @@ interface Equipment {
   nome: string;
   quantidade: number;
   categoria: string;
+  foto?: string;
 }
 
 interface EquipmentUsed {
@@ -30,38 +31,64 @@ export default function Home() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Dados iniciais
+  // Carregar dados do localStorage
   useEffect(() => {
-    setEquipamentos([
-      { id: '1', codigo: 'ATT-X200304', nome: 'Notebook Dell Inspiron', quantidade: 5, categoria: 'Informatica' },
-      { id: '2', codigo: 'ATT-X200305', nome: 'Monitor Samsung 24"', quantidade: 8, categoria: 'Informatica' },
-      { id: '3', codigo: 'ATT-X200306', nome: 'Mouse Logitech', quantidade: 12, categoria: 'Perifericos' },
-      { id: '4', codigo: 'ATT-X200307', nome: 'Teclado Mecânico', quantidade: 7, categoria: 'Perifericos' },
-      { id: '5', codigo: 'ATT-X200308', nome: 'Impressora HP LaserJet', quantidade: 3, categoria: 'Impressao' },
-    ]);
+    const loadData = () => {
+      try {
+        // Carregar equipamentos
+        const savedEquipamentos = localStorage.getItem('estoque-equipamentos');
+        if (savedEquipamentos) {
+          setEquipamentos(JSON.parse(savedEquipamentos));
+        } else {
+          // Dados iniciais apenas se não houver dados salvos
+          const initialEquipamentos = [
+            { id: '1', codigo: 'ATT-X200304', nome: 'Notebook Dell Inspiron', quantidade: 5, categoria: 'Informatica' },
+            { id: '2', codigo: 'ATT-X200305', nome: 'Monitor Samsung 24"', quantidade: 8, categoria: 'Informatica' },
+            { id: '3', codigo: 'ATT-X200306', nome: 'Mouse Logitech', quantidade: 12, categoria: 'Perifericos' },
+            { id: '4', codigo: 'ATT-X200307', nome: 'Teclado Mecânico', quantidade: 7, categoria: 'Perifericos' },
+            { id: '5', codigo: 'ATT-X200308', nome: 'Impressora HP LaserJet', quantidade: 3, categoria: 'Impressao' },
+          ];
+          setEquipamentos(initialEquipamentos);
+          localStorage.setItem('estoque-equipamentos', JSON.stringify(initialEquipamentos));
+        }
 
-    setUtilizados([
-      {
-        id: '1',
-        codigo: 'ATT-X200301',
-        nome: 'Notebook Dell XPS',
-        quantidade: 1,
-        local: 'Sala de Reunião A',
-        responsavel: 'João Silva',
-        dataUso: '2024-01-15',
-        observacoes: 'Para apresentação cliente'
-      },
-      {
-        id: '2',
-        codigo: 'ATT-X200302',
-        nome: 'Projetor Epson',
-        quantidade: 1,
-        local: 'Auditório Principal',
-        responsavel: 'Maria Santos',
-        dataUso: '2024-01-14',
-        observacoes: 'Evento corporativo'
-      },
-    ]);
+        // Carregar utilizados
+        const savedUtilizados = localStorage.getItem('estoque-utilizados');
+        if (savedUtilizados) {
+          setUtilizados(JSON.parse(savedUtilizados));
+        } else {
+          // Dados iniciais apenas se não houver dados salvos
+          const initialUtilizados = [
+            {
+              id: '1',
+              codigo: 'ATT-X200301',
+              nome: 'Notebook Dell XPS',
+              quantidade: 1,
+              local: 'Sala de Reunião A',
+              responsavel: 'João Silva',
+              dataUso: '2024-01-15',
+              observacoes: 'Para apresentação cliente'
+            },
+            {
+              id: '2',
+              codigo: 'ATT-X200302',
+              nome: 'Projetor Epson',
+              quantidade: 1,
+              local: 'Auditório Principal',
+              responsavel: 'Maria Santos',
+              dataUso: '2024-01-14',
+              observacoes: 'Evento corporativo'
+            },
+          ];
+          setUtilizados(initialUtilizados);
+          localStorage.setItem('estoque-utilizados', JSON.stringify(initialUtilizados));
+        }
+      } catch (error) {
+        console.error('Erro ao carregar dados do localStorage:', error);
+      }
+    };
+
+    loadData();
   }, []);
 
   const totalEstoque = equipamentos.reduce((sum, item) => sum + item.quantidade, 0);
@@ -146,8 +173,16 @@ export default function Home() {
               <div key={item.id} className="bg-white rounded-2xl shadow-md p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                      <i className="ri-computer-line text-blue-500 text-xl"></i>
+                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center overflow-hidden">
+                      {item.foto ? (
+                        <img
+                          src={item.foto}
+                          alt={item.nome}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <i className="ri-computer-line text-blue-500 text-xl"></i>
+                      )}
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-800">{item.nome}</h3>
