@@ -34,146 +34,63 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
-  const [authChecked, setAuthChecked] = useState(false); // Flag para evitar loop
 
-  // Verificar autenticação e carregar dados
+  // NOVA VERSÃO SIMPLIFICADA - Verificar autenticação sem loop
   useEffect(() => {
-    checkAuthAndLoadData();
+    initializeApp();
   }, []);
 
-  const checkAuthAndLoadData = async () => {
-    // Evitar loop de redirecionamento
-    if (authChecked) {
-      console.log('🔄 Verificação já realizada, evitando loop');
-      return;
-    }
+  const initializeApp = async () => {
+    console.log('🚀 NOVA VERSÃO - Inicializando aplicação...');
     
     try {
       setLoading(true);
-      setAuthChecked(true);
-      console.log('🔍 ANTI-LOOP - Verificando autenticação...');
       
-      // Marcar que estamos na página principal para evitar loop
-      localStorage.setItem('currentPage', 'home');
-      
-      // Verificar se há sessão ativa
+      // Verificar sessão do Supabase
       const session = await authService.getSession();
-      console.log('📋 Sessão:', session ? 'Existe' : 'Não existe');
       
       if (!session?.user) {
-        console.log('❌ Sem sessão - mostrando mensagem para fazer login');
+        console.log('❌ Nenhuma sessão encontrada');
         setError('Você precisa fazer login para acessar o sistema.');
         setLoading(false);
         return;
       }
-
+      
       const user = session.user;
-      console.log('👤 Usuário logado:', user.email);
+      console.log('✅ Usuário encontrado:', user.email);
       
-      // Limpar flags de redirecionamento
-      localStorage.removeItem('redirectFrom');
-      
-      // SIMPLIFICADO: Criar perfil básico para qualquer usuário logado
+      // Criar perfil simples baseado no email
+      const isAdmin = user.email === 'entregasobral@gmail.com';
       const profile = {
         id: user.id,
         email: user.email,
-        nome: user.email === 'entregasobral@gmail.com' ? 'Administrador' : user.email.split('@')[0],
-        status: 'approved', // Sempre aprovado
-        role: user.email === 'entregasobral@gmail.com' ? 'admin' : 'user',
+        nome: isAdmin ? 'Administrador' : user.email.split('@')[0],
+        status: 'approved',
+        role: isAdmin ? 'admin' : 'user',
         created_at: new Date().toISOString()
       };
       
-      console.log('✅ Perfil criado:', profile);
+      console.log('👤 Perfil criado:', profile);
       
+      // Definir estado
       setCurrentUser(user);
       setUserProfile(profile);
       
-      // Carregar dados
-      console.log('📊 Carregando dados...');
-      await loadData(user.id, profile.role === 'admin');
+      // Carregar dados iniciais (vazios para simplicidade)
+      setEquipamentos([]);
+      setUtilizados([]);
       
-      console.log('🎉 Tudo carregado com sucesso!');
+      console.log('🎉 Aplicação inicializada com sucesso!');
       
-    } catch (error: any) {
-      console.error('💥 Erro:', error);
-      setError('Erro de autenticação. Tente novamente.');
-      setLoading(false);
-    }
-  };
-
-  const loadData = async (userId: string, isAdmin: boolean) => {
-    try {
-      setLoading(true);
-      setError(null);
-      console.log('📊 Carregando dados para:', isAdmin ? 'ADMIN' : 'USUÁRIO NORMAL');
-
-      let equipamentosData = [];
-      let utilizadosData = [];
-
-      if (isAdmin) {
-        // Admin: tentar carregar todos os dados
-        try {
-          equipamentosData = await equipmentServiceAuth.getAllForAdmin();
-          utilizadosData = await usedEquipmentService.getAll();
-          console.log('✅ Dados do admin carregados com sucesso');
-        } catch (adminError) {
-          console.error('❌ Erro ao carregar dados do admin:', adminError);
-          equipamentosData = [];
-          utilizadosData = [];
-        }
-      } else {
-        // Usuário normal: não tentar carregar dados do banco para evitar erros RLS
-        console.log('👤 Usuário normal: usando dados vazios para evitar erros RLS');
-        equipamentosData = [];
-        utilizadosData = [];
-        
-        // Tentar carregar do localStorage como fallback
-        try {
-          const localEquipamentos = JSON.parse(localStorage.getItem('estoque-equipamentos') || '[]');
-          const localUtilizados = JSON.parse(localStorage.getItem('estoque-utilizados') || '[]');
-          
-          if (localEquipamentos.length > 0) {
-            equipamentosData = localEquipamentos;
-            console.log('✅ Dados locais de equipamentos carregados');
-          }
-          
-          if (localUtilizados.length > 0) {
-            utilizadosData = localUtilizados;
-            console.log('✅ Dados locais de utilizados carregados');
-          }
-        } catch (localError) {
-          console.error('❌ Erro ao carregar dados locais:', localError);
-        }
-      }
-
-      setEquipamentos(equipamentosData);
-      
-      // Adaptar dados dos utilizados para o formato esperado
-      const utilizadosAdaptados = utilizadosData.map((item: any) => ({
-        ...item,
-        dataUso: item.data_uso || item.dataUso
-      }));
-      setUtilizados(utilizadosAdaptados);
-
-      console.log('✅ Dados carregados:', {
-        equipamentos: equipamentosData.length,
-        utilizados: utilizadosAdaptados.length
-      });
-
-    } catch (err) {
-      console.error('💥 Erro geral ao carregar dados:', err);
-      // Para usuários normais, não mostrar erro - apenas usar dados vazios
-      if (!isAdmin) {
-        console.log('👤 Usuário normal: ignorando erro e usando dados vazios');
-        setEquipamentos([]);
-        setUtilizados([]);
-      } else {
-        setError('Erro ao carregar dados do banco.');
-      }
+    } catch (error) {
+      console.error('💥 Erro na inicialização:', error);
+      setError('Erro ao inicializar aplicação. Tente recarregar a página.');
     } finally {
       setLoading(false);
     }
   };
+
+
 
   const handleLogout = async () => {
     try {

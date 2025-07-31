@@ -14,13 +14,9 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // DESABILITADO: Não verificar se já está logado para evitar loop
+  // NOVA VERSÃO - Sem verificações automáticas para evitar loop
   useEffect(() => {
-    console.log('🔍 LOGIN - Página de login carregada (sem verificação automática)');
-    localStorage.setItem('currentPage', 'login');
-    
-    // Limpar qualquer flag de redirecionamento
-    localStorage.removeItem('redirectFrom');
+    console.log('🔍 NOVA VERSÃO LOGIN - Página carregada');
   }, []);
 
   const [loginSuccess, setLoginSuccess] = useState(false);
