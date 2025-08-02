@@ -149,6 +149,12 @@ export default function GerenciarUsuariosPage() {
             <div className="text-sm text-gray-600">Pendentes</div>
           </div>
           <div className="bg-white rounded-lg p-4 shadow">
+            <div className="text-2xl font-bold text-red-600">
+              {users.filter(u => u.status === 'inactive').length}
+            </div>
+            <div className="text-sm text-gray-600">Inativos</div>
+          </div>
+          <div className="bg-white rounded-lg p-4 shadow">
             <div className="text-2xl font-bold text-purple-600">
               {users.filter(u => u.role === 'admin').length}
             </div>
@@ -207,7 +213,7 @@ export default function GerenciarUsuariosPage() {
                           : 'bg-red-100 text-red-800'
                       }`}>
                         {user.status === 'approved' ? 'Aprovado' : 
-                         user.status === 'pending' ? 'Pendente' : 'Rejeitado'}
+                         user.status === 'pending' ? 'Pendente' : 'Inativo'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -239,7 +245,7 @@ export default function GerenciarUsuariosPage() {
                               )}
                             </button>
                             <button
-                              onClick={() => updateUserStatus(user.id, 'rejected')}
+                              onClick={() => updateUserStatus(user.id, 'inactive')}
                               disabled={updating === user.id}
                               className="text-red-600 hover:text-red-900 disabled:opacity-50"
                               title="Rejeitar usuário"

@@ -293,7 +293,7 @@ export const userService = {
   },
 
   // Atualizar status do usuário
-  async updateUserStatus(userId: string, status: 'approved' | 'rejected' | 'pending') {
+  async updateUserStatus(userId: string, status: 'approved' | 'inactive' | 'pending') {
     const { data, error } = await supabase
       .from('user_profiles')
       .update({ 
