@@ -75,7 +75,7 @@ export default function GerenciarUsuariosPage() {
     }
   };
 
-  const updateUserRole = async (userId: string, newRole: string) => {
+  const updateUserRole = async (userId: string, newRole: 'admin' | 'user') => {
     setUpdating(userId);
     try {
       await userService.updateUserRole(userId, newRole);
