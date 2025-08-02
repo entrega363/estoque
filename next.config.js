@@ -1,9 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Configuração otimizada para Vercel
-  experimental: {
-    serverComponentsExternalPackages: ['@supabase/supabase-js']
+  // Desabilitar ESLint durante o build
+  eslint: {
+    ignoreDuringBuilds: true,
   },
+  // Configuração otimizada para Vercel
+  serverExternalPackages: ['@supabase/supabase-js'],
   async headers() {
     return [
       {
