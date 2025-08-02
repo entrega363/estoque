@@ -64,8 +64,8 @@ export default function LoginPage() {
   };
 
   const goToHome = () => {
-    console.log('🏠 Redirecionando para a página principal...');
-    window.location.href = '/'; // Usar window.location para evitar problemas de estado
+    console.log('🏠 Redirecionando para o sistema...');
+    window.location.href = '/sistema'; // Redirecionar para a página do sistema
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
