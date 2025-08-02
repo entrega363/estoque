@@ -271,30 +271,6 @@ export const userService = {
     return data?.[0]
   },
 
-  // Desativar usuário
-  async deactivateUser(userId: string) {
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .update({ status: 'inactive' })
-      .eq('id', userId)
-      .select()
-    
-    if (error) throw error
-    return data?.[0]
-  },
-
-  // Ativar usuário
-  async activateUser(userId: string) {
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .update({ status: 'approved' })
-      .eq('id', userId)
-      .select()
-    
-    if (error) throw error
-    return data?.[0]
-  },
-
   // Verificar se é admin
   async isAdmin(userId: string) {
     const profile = await this.getProfile(userId)
