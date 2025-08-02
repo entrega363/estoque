@@ -44,6 +44,9 @@ export default function SistemaPage() {
 
       setUserProfile(profile);
       console.log('✅ Usuário autenticado e aprovado:', profile);
+      console.log('🔍 Role do usuário:', profile.role);
+      console.log('🔍 Status do usuário:', profile.status);
+      console.log('🔍 É admin?', profile.role === 'admin');
       
     } catch (error) {
       console.error('❌ Erro na verificação de autenticação:', error);
@@ -91,6 +94,11 @@ export default function SistemaPage() {
             <div className="flex items-center gap-4">
               <div className="text-sm text-gray-600">
                 Olá, <span className="font-medium">{userProfile?.nome || user?.email}</span>
+                {userProfile && (
+                  <span className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded">
+                    {userProfile.role} - {userProfile.status}
+                  </span>
+                )}
               </div>
               <button
                 onClick={handleLogout}
@@ -220,6 +228,32 @@ export default function SistemaPage() {
             </Link>
           )}
 
+        </div>
+
+        {/* Debug Info (temporário) */}
+        <div className="mt-8 bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            🔍 Debug Info (Temporário)
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p><strong>Usuário:</strong> {userProfile?.nome || 'N/A'}</p>
+              <p><strong>Email:</strong> {userProfile?.email || 'N/A'}</p>
+              <p><strong>Role:</strong> {userProfile?.role || 'N/A'}</p>
+              <p><strong>Status:</strong> {userProfile?.status || 'N/A'}</p>
+            </div>
+            <div>
+              <p><strong>É Admin:</strong> {userProfile?.role === 'admin' ? 'SIM' : 'NÃO'}</p>
+              <p><strong>Está Aprovado:</strong> {userProfile?.status === 'approved' ? 'SIM' : 'NÃO'}</p>
+              <p><strong>Deve mostrar card:</strong> {userProfile?.role === 'admin' ? 'SIM' : 'NÃO'}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            🔄 Recarregar Página
+          </button>
         </div>
 
         {/* Status do Sistema */}
