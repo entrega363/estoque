@@ -129,12 +129,8 @@ GRANT ALL ON user_profiles TO authenticated;
 GRANT ALL ON equipamentos TO authenticated;
 GRANT ALL ON equipamentos_utilizados TO authenticated;
 
--- 9. INSERIR DADOS DE EXEMPLO (OPCIONAL)
-INSERT INTO equipamentos (codigo, nome, quantidade, categoria, user_id) VALUES
-('EQ001', 'Notebook Dell', 5, 'Informática', (SELECT id FROM auth.users WHERE email = 'entregasobral@gmail.com' LIMIT 1)),
-('EQ002', 'Projetor Epson', 2, 'Audiovisual', (SELECT id FROM auth.users WHERE email = 'entregasobral@gmail.com' LIMIT 1)),
-('EQ003', 'Mesa de Som', 1, 'Audiovisual', (SELECT id FROM auth.users WHERE email = 'entregasobral@gmail.com' LIMIT 1))
-ON CONFLICT DO NOTHING;
+-- 9. DADOS DE EXEMPLO SERÃO INSERIDOS APÓS O PRIMEIRO LOGIN DO ADMIN
+-- (Removido para evitar erro de user_id null)
 
 -- 10. FUNÇÃO DE DEBUG PARA VERIFICAR CONFIGURAÇÃO
 CREATE OR REPLACE FUNCTION debug_database_status()

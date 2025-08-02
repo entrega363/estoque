@@ -140,31 +140,50 @@ export const usedEquipmentService = {
 export const authService = {
   // Fazer login
   async signIn(email: string, password: string) {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    })
-    
-    if (error) throw error
-    return data
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+      
+      if (error) {
+        console.error('Erro no signIn:', error)
+        throw new Error(error.message || 'Erro ao fazer login')
+      }
+      
+      return data
+    } catch (err: any) {
+      console.error('Erro geral no signIn:', err)
+      throw err
+    }
   },
 
   // Fazer cadastro
   async signUp(email: string, password: string, nome: string) {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          nome: nome
+    try {
+      console.log('Iniciando signup para:', email)
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            nome: nome
+          }
         }
+      })
+      
+      if (error) {
+        console.error('Erro no signUp:', error)
+        throw new Error(error.message || 'Erro ao criar conta')
       }
-    })
-    
-    if (error) throw error
-    
-    // O perfil será criado automaticamente pelo trigger
-    return data
+      
+      console.log('SignUp bem-sucedido:', data)
+      return data
+    } catch (err: any) {
+      console.error('Erro geral no signUp:', err)
+      throw err
+    }
   },
 
   // Fazer logout

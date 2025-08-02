@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authService } from '../../lib/supabase';
+import { authServiceStatic } from '../../lib/supabase-static';
 
 export default function CadastroPage() {
   const router = useRouter();
@@ -20,9 +21,21 @@ export default function CadastroPage() {
   // Verificar se já está logado
   useEffect(() => {
     const checkAuth = async () => {
-      const session = await authService.getSession();
-      if (session) {
-        router.push('/');
+      try {
+        const session = await authService.getSession();
+        if (session) {
+          router.push('/');
+        }
+      } catch (error) {
+        // Se falhar com variáveis de ambiente, tentar versão estática
+        try {
+          const session = await authServiceStatic.getSession();
+          if (session) {
+            router.push('/');
+          }
+        } catch (staticError) {
+          console.warn('Erro ao verificar autenticação:', staticError);
+        }
       }
     };
     checkAuth();
@@ -47,10 +60,39 @@ export default function CadastroPage() {
     }
 
     try {
-      await authService.signUp(formData.email, formData.password, formData.nome);
+      console.log('🔍 Tentando criar conta para:', formData.email);
+      console.log('🌍 Ambiente:', process.env.NODE_ENV);
+      console.log('🔗 URL Supabase:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+      
+      // Tentar primeiro com as variáveis de ambiente
+      let result;
+      try {
+        result = await authService.signUp(formData.email, formData.password, formData.nome);
+        console.log('✅ Resultado do signup (env):', result);
+      } catch (envError: any) {
+        console.warn('⚠️ Erro com variáveis de ambiente, tentando versão estática:', envError.message);
+        // Se falhar, usar a versão estática (para GitHub Pages)
+        result = await authServiceStatic.signUp(formData.email, formData.password, formData.nome);
+        console.log('✅ Resultado do signup (estático):', result);
+      }
+      
       setSuccess(true);
+      
     } catch (error: any) {
-      setError(error.message || 'Erro ao criar conta');
+      console.error('Erro detalhado:', error);
+      
+      // Mostrar erro mais específico
+      let errorMessage = 'Erro ao criar conta';
+      
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (error.error_description) {
+        errorMessage = error.error_description;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
