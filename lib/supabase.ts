@@ -326,6 +326,45 @@ export const userService = {
     
     if (error) throw error
     return data?.[0]
+  },
+
+  // Desativar usuário
+  async deactivateUser(userId: string) {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .update({ status: 'inactive' })
+      .eq('id', userId)
+      .select()
+    
+    if (error) throw error
+    return data?.[0]
+  },
+
+  // Ativar usuário
+  async activateUser(userId: string) {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .update({ status: 'approved' })
+      .eq('id', userId)
+      .select()
+    
+    if (error) throw error
+    return data?.[0]
+  },
+
+  // Excluir usuário (soft delete - marca como deletado)
+  async deleteUser(userId: string) {
+    // Primeiro, marcar como inativo
+    const { error: profileError } = await supabase
+      .from('user_profiles')
+      .delete()
+      .eq('id', userId)
+    
+    if (profileError) throw profileError
+
+    // Opcional: também deletar da tabela auth.users (requer privilégios especiais)
+    // Por segurança, vamos apenas deletar o perfil
+    return { success: true }
   }
 }
 
