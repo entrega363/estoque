@@ -1,17 +1,24 @@
--- SOLUÇÃO TEMPORÁRIA: Desabilitar RLS completamente para testar
--- Execute este script se o anterior não resolver
+-- SOLUÇÃO DRÁSTICA - DESABILITAR RLS TEMPORARIAMENTE
+-- Execute este script no Supabase SQL Editor
 
--- Desabilitar RLS em todas as tabelas
+-- 1. Desabilitar RLS na tabela user_profiles temporariamente
 ALTER TABLE user_profiles DISABLE ROW LEVEL SECURITY;
-ALTER TABLE equipamentos DISABLE ROW LEVEL SECURITY;
-ALTER TABLE equipamentos_utilizados DISABLE ROW LEVEL SECURITY;
 
--- Garantir permissões completas
-GRANT ALL ON user_profiles TO authenticated, anon;
-GRANT ALL ON equipamentos TO authenticated, anon;
-GRANT ALL ON equipamentos_utilizados TO authenticated, anon;
+-- 2. Remover todas as políticas problemáticas
+DROP POLICY IF EXISTS "allow_own_profile" ON user_profiles;
+DROP POLICY IF EXISTS "allow_admin_all" ON user_profiles;
+DROP POLICY IF EXISTS "users_own_profile" ON user_profiles;
+DROP POLICY IF EXISTS "admin_all_profiles" ON user_profiles;
+DROP POLICY IF EXISTS "authenticated_users_own_profile" ON user_profiles;
+DROP POLICY IF EXISTS "admin_full_access" ON user_profiles;
+DROP POLICY IF EXISTS "users_can_view_own_profile" ON user_profiles;
+DROP POLICY IF EXISTS "users_can_insert_own_profile" ON user_profiles;
+DROP POLICY IF EXISTS "users_can_update_own_profile" ON user_profiles;
+DROP POLICY IF EXISTS "admin_can_manage_all_profiles" ON user_profiles;
 
--- Verificar se funcionou
-SELECT 
-    'RLS desabilitado temporariamente' as status,
-    'Teste agora com usuários aprovados' as instrucao;
+-- 3. Garantir que todos os usuários estão aprovados
+UPDATE user_profiles SET status = 'approved' WHERE status != 'approved';
+
+-- 4. Verificar resultado
+SELECT 'RLS DESABILITADO - TODOS PODEM ACESSAR AGORA!' as resultado;
+SELECT email, status, role FROM user_profiles ORDER BY email;

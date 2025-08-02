@@ -14,12 +14,31 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // NOVA VERSÃO - Sem verificações automáticas para evitar loop
-  useEffect(() => {
-    console.log('🔍 NOVA VERSÃO LOGIN - Página carregada');
-  }, []);
-
   const [loginSuccess, setLoginSuccess] = useState(false);
+
+  // Verificar se já está logado (sem loop)
+  useEffect(() => {
+    let isMounted = true;
+    
+    const checkExistingSession = async () => {
+      try {
+        const session = await authService.getSession();
+        
+        if (session?.user && isMounted) {
+          console.log('✅ Usuário já está logado:', session.user.email);
+          setLoginSuccess(true);
+        }
+      } catch (error) {
+        console.log('ℹ️ Nenhuma sessão ativa, permanecendo na página de login');
+      }
+    };
+    
+    checkExistingSession();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,20 +46,26 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      await authService.signIn(formData.email, formData.password);
-      console.log('✅ Login realizado com sucesso!');
+      const result = await authService.signIn(formData.email, formData.password);
+      console.log('✅ Login realizado com sucesso!', result.user?.email);
       setLoginSuccess(true);
-      // NÃO redirecionar automaticamente para evitar loop
+      
+      // Aguardar um pouco para garantir que a sessão foi estabelecida
+      setTimeout(() => {
+        goToHome();
+      }, 1000);
+      
     } catch (error: any) {
-      setError(error.message || 'Erro ao fazer login');
+      console.error('❌ Erro no login:', error);
+      setError(error.message || 'Erro ao fazer login. Verifique suas credenciais.');
     } finally {
       setIsLoading(false);
     }
   };
 
   const goToHome = () => {
-    console.log('🏠 Navegando manualmente para a página principal...');
-    router.push('/');
+    console.log('🏠 Redirecionando para a página principal...');
+    window.location.href = '/'; // Usar window.location para evitar problemas de estado
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

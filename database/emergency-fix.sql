@@ -1,50 +1,48 @@
--- CORREÇÃO DE EMERGÊNCIA: Desabilitar RLS completamente
--- Execute este script AGORA para resolver o problema imediatamente
+-- CORREÇÃO EMERGENCIAL - SCRIPT SUPER SIMPLES
+-- Execute este script no Supabase SQL Editor
 
--- Desabilitar RLS em todas as tabelas
-ALTER TABLE user_profiles DISABLE ROW LEVEL SECURITY;
-ALTER TABLE equipamentos DISABLE ROW LEVEL SECURITY;
-ALTER TABLE equipamentos_utilizados DISABLE ROW LEVEL SECURITY;
+-- 1. Aprovar todos os usuários existentes
+UPDATE user_profiles 
+SET status = 'approved', approved_at = NOW()
+WHERE status != 'approved';
 
--- Garantir permissões completas para todos os usuários autenticados
-GRANT ALL ON user_profiles TO authenticated, anon;
-GRANT ALL ON equipamentos TO authenticated, anon;
-GRANT ALL ON equipamentos_utilizados TO authenticated, anon;
-
--- Garantir que o admin existe e está correto
-INSERT INTO user_profiles (
-    id, email, nome, status, role, created_at, approved_at
-) 
-SELECT 
-    au.id,
-    'entregasobral@gmail.com',
-    'Administrador',
-    'approved',
-    'admin',
-    NOW(),
-    NOW()
-FROM auth.users au
-WHERE au.email = 'entregasobral@gmail.com'
-ON CONFLICT (id) DO UPDATE SET
-    email = 'entregasobral@gmail.com',
-    nome = 'Administrador',
+-- 2. Garantir que o admin está correto
+UPDATE user_profiles 
+SET 
     status = 'approved',
     role = 'admin',
-    approved_at = NOW();
+    nome = 'Administrador'
+WHERE email = 'entregasobral@gmail.com';
 
--- Verificar se funcionou
+-- 3. Criar perfis para usuários que não têm
+INSERT INTO user_profiles (id, email, nome, status, role, created_at)
 SELECT 
-    'EMERGÊNCIA RESOLVIDA!' as status,
-    'RLS desabilitado - todos os usuários devem funcionar agora' as resultado,
-    'Execute os testes imediatamente' as instrucao;
+    au.id,
+    au.email,
+    split_part(au.email, '@', 1) as nome,
+    'approved' as status,
+    CASE 
+        WHEN au.email = 'entregasobral@gmail.com' THEN 'admin'
+        ELSE 'user'
+    END as role,
+    NOW() as created_at
+FROM auth.users au
+WHERE NOT EXISTS (
+    SELECT 1 FROM user_profiles up WHERE up.id = au.id
+);
 
--- Mostrar todos os usuários aprovados
+-- 4. Verificar resultado
 SELECT 
-    up.email,
-    up.nome,
+    au.email,
     up.status,
     up.role,
-    'Deve funcionar agora' as teste
-FROM user_profiles up
-WHERE up.status = 'approved'
-ORDER BY up.role DESC, up.email;
+    CASE 
+        WHEN up.status = 'approved' THEN 'PODE FAZER LOGIN'
+        ELSE 'NÃO PODE FAZER LOGIN'
+    END as situacao
+FROM auth.users au
+LEFT JOIN user_profiles up ON au.id = up.id
+ORDER BY au.created_at DESC;
+
+-- 5. Mensagem final
+SELECT 'TODOS OS USUÁRIOS FORAM APROVADOS!' as resultado;

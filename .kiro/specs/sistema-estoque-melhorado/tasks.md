@@ -1,4 +1,4 @@
-# Implementation Plan
+![https://entrega363.github.io/estoque/https://entrega363.github.io/estoque/https://entrega363.github.io/estoque/https://entrega363.github.io/estoque/https://entrega363.github.io/estoque/https://entrega363.github.io/estoque/https://entrega363.github.io/estoque/https://entrega363.github.io/estoque/](image.png)# Implementation Plan
 
 - [ ] 1. Set up project structure and core interfaces
   - Create directory structure for contexts, hooks, services, types, and utils
@@ -20,7 +20,10 @@
     - _Requirements: 1.1, 1.2_
 
 - [ ] 3. Create global state management with Context API
-  - [ ] 3.1 Implement EquipmentContext provider
+  - [x] 3.1 Implement EquipmentContext provider
+
+
+
     - Create context with state for equipments, used equipments, loading, and error states
     - Implement CRUD actions for equipment management
     - Add search and filter state management

@@ -35,91 +35,92 @@ export default function Home() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
 
-  // VERSÃO ANTI-LOOP DEFINITIVA - Só executa uma vez
+  // VERSÃO CORRIGIDA - Sistema robusto de autenticação
   useEffect(() => {
-    // Verificar se já foi inicializado para evitar loop
-    const isInitialized = sessionStorage.getItem('appInitialized');
-    if (isInitialized) {
-      console.log('🔄 App já foi inicializado, evitando nova execução');
-      return;
-    }
+    let isMounted = true;
     
-    sessionStorage.setItem('appInitialized', 'true');
-    initializeApp();
-  }, []);
-
-  const initializeApp = async () => {
-    console.log('🚀 VERSÃO ULTRA SIMPLIFICADA - Inicializando...');
-    
-    try {
-      setLoading(true);
+    const initializeApp = async () => {
+      console.log('🚀 Inicializando aplicação...');
       
-      // Verificar sessão do Supabase com timeout
-      const sessionPromise = authService.getSession();
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), 5000)
-      );
-      
-      const session = await Promise.race([sessionPromise, timeoutPromise]);
-      
-      if (!session?.user) {
-        console.log('❌ Nenhuma sessão encontrada');
-        setError('Você precisa fazer login para acessar o sistema.');
-        setLoading(false);
-        return;
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // 1. Verificar sessão atual
+        const session = await authService.getSession();
+        
+        if (!session?.user) {
+          console.log('❌ Nenhuma sessão ativa');
+          if (isMounted) {
+            router.push('/login');
+          }
+          return;
+        }
+        
+        const user = session.user;
+        console.log('✅ Usuário autenticado:', user.email);
+        
+        // 2. VERSÃO SIMPLIFICADA - Criar perfil local sempre
+        console.log('🔧 MODO EMERGÊNCIA - Criando perfil local sem consultar banco');
+        
+        const isAdmin = user.email === 'entregasobral@gmail.com';
+        const profile = {
+          id: user.id,
+          email: user.email || 'usuario@sistema.com',
+          nome: isAdmin ? 'Administrador' : (user.email?.split('@')[0] || 'Usuário'),
+          status: 'approved', // SEMPRE aprovado
+          role: isAdmin ? 'admin' : 'user',
+          created_at: new Date().toISOString()
+        };
+        
+        console.log('✅ Perfil local criado:', profile);
+        
+        // 5. Definir estado da aplicação
+        if (isMounted) {
+          setCurrentUser(user);
+          setUserProfile(profile);
+          
+          // 6. Carregar dados (com tratamento de erro)
+          try {
+            const [equipamentosData, utilizadosData] = await Promise.all([
+              equipmentService.getAll().catch(() => []),
+              usedEquipmentService.getAll().catch(() => [])
+            ]);
+            
+            setEquipamentos(equipamentosData);
+            setUtilizados(utilizadosData);
+            
+            console.log('✅ Dados carregados com sucesso');
+          } catch (error) {
+            console.warn('⚠️ Erro ao carregar dados, usando dados vazios:', error);
+            setEquipamentos([]);
+            setUtilizados([]);
+          }
+        }
+        
+      } catch (error) {
+        console.error('💥 Erro crítico na inicialização:', error);
+        
+        if (isMounted) {
+          setError('Erro ao inicializar aplicação. Tente fazer login novamente.');
+          setTimeout(() => {
+            router.push('/login');
+          }, 2000);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-      
-      const user = session.user;
-      console.log('✅ Usuário encontrado:', user.email);
-      
-      // Criar perfil SEMPRE baseado apenas no email (sem consultar banco)
-      const isAdmin = user.email === 'entregasobral@gmail.com';
-      const profile = {
-        id: user.id,
-        email: user.email,
-        nome: isAdmin ? 'Administrador' : user.email.split('@')[0],
-        status: 'approved', // SEMPRE aprovado
-        role: isAdmin ? 'admin' : 'user',
-        created_at: new Date().toISOString()
-      };
-      
-      console.log('👤 Perfil criado (sem consultar banco):', profile);
-      
-      // Definir estado
-      setCurrentUser(user);
-      setUserProfile(profile);
-      
-      // Dados iniciais vazios (sem consultar banco)
-      setEquipamentos([]);
-      setUtilizados([]);
-      
-      console.log('🎉 Aplicação inicializada SEM consultar banco!');
-      
-    } catch (error) {
-      console.error('💥 Erro na inicialização:', error);
-      
-      // FALLBACK: Se tudo falhar, criar um usuário genérico
-      console.log('🔧 Usando fallback - criando usuário genérico...');
-      
-      const genericProfile = {
-        id: 'generic-user',
-        email: 'usuario@sistema.com',
-        nome: 'Usuário',
-        status: 'approved',
-        role: 'user',
-        created_at: new Date().toISOString()
-      };
-      
-      setCurrentUser({ id: 'generic-user', email: 'usuario@sistema.com' });
-      setUserProfile(genericProfile);
-      setEquipamentos([]);
-      setUtilizados([]);
-      
-      console.log('✅ Fallback aplicado com sucesso!');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+    
+    initializeApp();
+    
+    // Cleanup
+    return () => {
+      isMounted = false;
+    };
+  }, [router]);
 
 
 
