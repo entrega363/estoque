@@ -61,7 +61,7 @@ export default function GerenciarUsuariosPage() {
     }
   };
 
-  const updateUserStatus = async (userId: string, newStatus: string) => {
+  const updateUserStatus = async (userId: string, newStatus: 'approved' | 'inactive' | 'pending') => {
     setUpdating(userId);
     try {
       await userService.updateUserStatus(userId, newStatus);
