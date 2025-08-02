@@ -90,7 +90,7 @@ export default function SistemaPage() {
             
             <div className="flex items-center gap-4">
               <div className="text-sm text-gray-600">
-                Olá, <span className="font-medium">{userProfile?.name || user?.email}</span>
+                Olá, <span className="font-medium">{userProfile?.nome || user?.email}</span>
               </div>
               <button
                 onClick={handleLogout}
@@ -180,21 +180,23 @@ export default function SistemaPage() {
 
           {/* Card: Usuários (apenas admin) */}
           {userProfile?.role === 'admin' && (
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer border border-gray-100">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <i className="ri-team-line text-orange-600 text-2xl"></i>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    Gerenciar Usuários
-                  </h3>
-                  <p className="text-gray-600 text-sm">
-                    Aprovar e gerenciar usuários
-                  </p>
+            <Link href="/gerenciar-usuarios">
+              <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer border border-gray-100">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <i className="ri-team-line text-orange-600 text-2xl"></i>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      Gerenciar Usuários
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      Aprovar e gerenciar usuários
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            </Link>
           )}
 
         </div>

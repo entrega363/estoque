@@ -290,6 +290,33 @@ export const userService = {
   async isAdmin(userId: string) {
     const profile = await this.getProfile(userId)
     return profile?.role === 'admin' && profile?.status === 'approved'
+  },
+
+  // Atualizar status do usuário
+  async updateUserStatus(userId: string, status: 'approved' | 'rejected' | 'pending') {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .update({ 
+        status,
+        approved_at: status === 'approved' ? new Date().toISOString() : null
+      })
+      .eq('id', userId)
+      .select()
+    
+    if (error) throw error
+    return data?.[0]
+  },
+
+  // Atualizar role do usuário
+  async updateUserRole(userId: string, role: 'admin' | 'user') {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .update({ role })
+      .eq('id', userId)
+      .select()
+    
+    if (error) throw error
+    return data?.[0]
   }
 }
 
