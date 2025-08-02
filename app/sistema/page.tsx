@@ -36,7 +36,7 @@ export default function SistemaPage() {
         return;
       }
 
-      if (!profile.approved) {
+      if (profile.status !== 'approved') {
         console.log('⏳ Usuário não aprovado ainda');
         router.push('/aguardando-aprovacao');
         return;

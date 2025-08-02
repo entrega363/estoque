@@ -219,7 +219,7 @@ export const userService = {
   },
 
   // Buscar perfil por ID
-  async getProfile(userId: string) {
+  async getUserProfile(userId: string) {
     const { data, error } = await supabase
       .from('user_profiles')
       .select('*')
@@ -228,6 +228,11 @@ export const userService = {
     
     if (error) throw error
     return data
+  },
+
+  // Buscar perfil por ID (alias para compatibilidade)
+  async getProfile(userId: string) {
+    return this.getUserProfile(userId)
   },
 
   // Buscar todos os usuários (apenas admin)

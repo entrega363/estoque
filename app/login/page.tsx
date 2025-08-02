@@ -2,11 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { authService, userService } from '../../lib/supabase';
+import { authService } from '../../lib/supabase';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
