@@ -199,6 +199,27 @@ export default function SistemaPage() {
             </Link>
           )}
 
+          {/* Card: Debug (apenas admin) */}
+          {userProfile?.role === 'admin' && (
+            <Link href="/debug-usuarios">
+              <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer border border-gray-100 border-dashed">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                    <i className="ri-bug-line text-red-600 text-2xl"></i>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      Debug Usuários
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      Diagnosticar problemas
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          )}
+
         </div>
 
         {/* Status do Sistema */}

@@ -237,12 +237,21 @@ export const userService = {
 
   // Buscar todos os usuários (apenas admin)
   async getAllUsers() {
+    console.log('🔍 Tentando buscar todos os usuários...');
+    
     const { data, error } = await supabase
       .from('user_profiles')
       .select('*')
       .order('created_at', { ascending: false })
     
-    if (error) throw error
+    console.log('📊 Resultado da consulta:', { data, error });
+    
+    if (error) {
+      console.error('❌ Erro ao buscar usuários:', error);
+      throw error;
+    }
+    
+    console.log('✅ Usuários encontrados:', data?.length || 0);
     return data || []
   },
 
