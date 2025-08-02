@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authService } from '../../lib/supabase';
-import { authServiceStatic } from '../../lib/supabase-static';
 
 export default function CadastroPage() {
   const router = useRouter();
@@ -21,21 +20,9 @@ export default function CadastroPage() {
   // Verificar se já está logado
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        const session = await authService.getSession();
-        if (session) {
-          router.push('/');
-        }
-      } catch (error) {
-        // Se falhar com variáveis de ambiente, tentar versão estática
-        try {
-          const session = await authServiceStatic.getSession();
-          if (session) {
-            router.push('/');
-          }
-        } catch (staticError) {
-          console.warn('Erro ao verificar autenticação:', staticError);
-        }
+      const session = await authService.getSession();
+      if (session) {
+        router.push('/');
       }
     };
     checkAuth();
@@ -60,21 +47,10 @@ export default function CadastroPage() {
     }
 
     try {
-      console.log('🔍 Tentando criar conta para:', formData.email);
-      console.log('🌍 Ambiente:', process.env.NODE_ENV);
-      console.log('🔗 URL Supabase:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+      console.log('Tentando criar conta para:', formData.email);
       
-      // Tentar primeiro com as variáveis de ambiente
-      let result;
-      try {
-        result = await authService.signUp(formData.email, formData.password, formData.nome);
-        console.log('✅ Resultado do signup (env):', result);
-      } catch (envError: any) {
-        console.warn('⚠️ Erro com variáveis de ambiente, tentando versão estática:', envError.message);
-        // Se falhar, usar a versão estática (para GitHub Pages)
-        result = await authServiceStatic.signUp(formData.email, formData.password, formData.nome);
-        console.log('✅ Resultado do signup (estático):', result);
-      }
+      const result = await authService.signUp(formData.email, formData.password, formData.nome);
+      console.log('Resultado do signup:', result);
       
       setSuccess(true);
       

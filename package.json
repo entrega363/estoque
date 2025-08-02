@@ -5,11 +5,9 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development next dev -H 0.0.0.0 -p 3000",
     "build": "next build",
-    "build:github": "next build",
+    "start": "next start",
     "lint": "next lint",
-    "export": "next build",
-    "deploy": "gh-pages -d out",
-    "predeploy": "npm run export"
+    "vercel-build": "next build"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.19.3",
