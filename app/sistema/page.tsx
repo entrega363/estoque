@@ -230,32 +230,6 @@ export default function SistemaPage() {
 
         </div>
 
-        {/* Debug Info (temporário) */}
-        <div className="mt-8 bg-yellow-50 border border-yellow-200 rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            🔍 Debug Info (Temporário)
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <p><strong>Usuário:</strong> {userProfile?.nome || 'N/A'}</p>
-              <p><strong>Email:</strong> {userProfile?.email || 'N/A'}</p>
-              <p><strong>Role:</strong> {userProfile?.role || 'N/A'}</p>
-              <p><strong>Status:</strong> {userProfile?.status || 'N/A'}</p>
-            </div>
-            <div>
-              <p><strong>É Admin:</strong> {userProfile?.role === 'admin' ? 'SIM' : 'NÃO'}</p>
-              <p><strong>Está Aprovado:</strong> {userProfile?.status === 'approved' ? 'SIM' : 'NÃO'}</p>
-              <p><strong>Deve mostrar card:</strong> {userProfile?.role === 'admin' ? 'SIM' : 'NÃO'}</p>
-            </div>
-          </div>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            🔄 Recarregar Página
-          </button>
-        </div>
-
         {/* Status do Sistema */}
         <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">
