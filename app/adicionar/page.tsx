@@ -20,7 +20,7 @@ export default function AdicionarPage() {
     codigo: '',
     nome: '',
     quantidade: 1,
-    categoria: 'Informatica'
+    categoria: 'Infraestrutura'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -57,11 +57,10 @@ export default function AdicionarPage() {
   };
 
   const categorias = [
-    'Informatica',
-    'Perifericos', 
-    'Impressao',
-    'Mobiliario',
-    'Eletronicos',
+    'Infraestrutura',
+    'Redes',
+    'B2B',
+    'B2C',
     'Outros'
   ];
 
