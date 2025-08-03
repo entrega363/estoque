@@ -89,7 +89,12 @@ export default function AdicionarPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    console.log('🚀 Iniciando submit do formulário');
+    console.log('📋 Dados do formulário:', formData);
+    console.log('👤 Usuário atual:', currentUser);
+
     if (!currentUser) {
+      console.error('❌ Usuário não autenticado');
       alert('Usuário não autenticado');
       setIsSubmitting(false);
       return;
@@ -97,15 +102,18 @@ export default function AdicionarPage() {
 
     try {
       // Verificar se o código já existe para este usuário
+      console.log('🔍 Verificando se código já existe...');
       const codeExists = await equipmentServiceAuth.checkCodeExistsForUser(formData.codigo, currentUser.id);
       if (codeExists) {
+        console.log('⚠️ Código já existe');
         alert('Já existe um equipamento com este código!');
         setIsSubmitting(false);
         return;
       }
 
       // Criar novo equipamento com user_id
-      await equipmentServiceAuth.create({
+      console.log('💾 Criando equipamento no Supabase...');
+      const equipmentData = {
         codigo: formData.codigo,
         nome: formData.nome,
         descricao: formData.descricao,
@@ -113,15 +121,20 @@ export default function AdicionarPage() {
         categoria: formData.categoria,
         foto: formData.foto,
         user_id: currentUser.id
-      });
+      };
+      console.log('📦 Dados do equipamento:', equipmentData);
+      
+      await equipmentServiceAuth.create(equipmentData);
 
+      console.log('✅ Equipamento criado com sucesso!');
       setShowSuccess(true);
       setTimeout(() => {
-        router.push('/');
+        router.push('/sistema');
       }, 2000);
 
     } catch (error) {
-      console.error('Erro ao salvar equipamento:', error);
+      console.error('❌ Erro ao salvar equipamento:', error);
+      console.error('📋 Detalhes do erro:', error);
       
       // Fallback para localStorage se Supabase falhar
       try {
@@ -150,7 +163,7 @@ export default function AdicionarPage() {
 
         setShowSuccess(true);
         setTimeout(() => {
-          router.push('/');
+          router.push('/sistema');
         }, 2000);
 
       } catch (localError) {
