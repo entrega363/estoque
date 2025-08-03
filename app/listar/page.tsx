@@ -89,8 +89,8 @@ export default function ListarPage() {
 
   const filteredEquipamentos = equipamentos.filter(eq => {
     const matchesSearch = eq.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         eq.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (eq.descricao && eq.descricao.toLowerCase().includes(searchTerm.toLowerCase()));
+      eq.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (eq.descricao && eq.descricao.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = !selectedCategory || eq.categoria === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -183,7 +183,7 @@ export default function ListarPage() {
 
       // Recarregar equipamentos
       await loadEquipments(currentUser.id);
-      
+
       setShowRetirarModal(false);
       alert('Equipamento retirado do estoque com sucesso!');
     } catch (error) {
@@ -220,7 +220,7 @@ export default function ListarPage() {
                 Lista de Produtos
               </h1>
             </div>
-            
+
             <div className="text-sm text-gray-600">
               {equipamentos.length} {equipamentos.length === 1 ? 'item' : 'itens'}
             </div>
@@ -230,7 +230,7 @@ export default function ListarPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
+
         {/* Filtros */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -282,7 +282,7 @@ export default function ListarPage() {
               {searchTerm || selectedCategory ? 'Nenhum item encontrado' : 'Nenhum equipamento cadastrado'}
             </h3>
             <p className="text-gray-600 mb-6">
-              {searchTerm || selectedCategory 
+              {searchTerm || selectedCategory
                 ? 'Tente ajustar os filtros de busca'
                 : 'Comece adicionando seu primeiro equipamento ao estoque'
               }
@@ -313,7 +313,7 @@ export default function ListarPage() {
                     </div>
                   </div>
                 )}
-                
+
                 {/* Informações */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3 flex-1">

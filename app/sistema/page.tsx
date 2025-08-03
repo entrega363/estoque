@@ -154,6 +154,25 @@ export default function SistemaPage() {
             </div>
           </Link>
 
+          {/* Card: Equipamentos Utilizados */}
+          <Link href="/utilizados">
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer border border-gray-100">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <i className="ri-tools-line text-orange-600 text-2xl"></i>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Equipamentos Utilizados
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    Ver itens em uso e localizações
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Link>
+
           {/* Card: Relatórios */}
           <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer border border-gray-100">
             <div className="flex items-center gap-4">
