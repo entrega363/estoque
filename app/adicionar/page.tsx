@@ -38,20 +38,39 @@ export default function AdicionarPage() {
   const checkAuth = async () => {
     try {
       const user = await authService.getCurrentUser();
+      console.log('🔍 Usuário atual:', user);
+      
       if (!user) {
+        console.log('❌ Usuário não encontrado, redirecionando para login');
         router.push('/login');
         return;
       }
 
-      const profile = await userService.getProfile(user.id);
-      if (!profile || profile.status !== 'approved') {
+      try {
+        const profile = await userService.getUserProfile(user.id);
+        console.log('👤 Perfil do usuário:', profile);
+        
+        if (!profile) {
+          console.log('❌ Perfil não encontrado');
+          router.push('/login');
+          return;
+        }
+
+        if (profile.status !== 'approved') {
+          console.log('⏳ Usuário não aprovado, status:', profile.status);
+          router.push('/aguardando-aprovacao');
+          return;
+        }
+
+        console.log('✅ Usuário autenticado e aprovado');
+        setCurrentUser(user);
+      } catch (profileError) {
+        console.error('❌ Erro ao buscar perfil:', profileError);
         router.push('/login');
         return;
       }
-
-      setCurrentUser(user);
     } catch (error) {
-      console.error('Erro ao verificar autenticação:', error);
+      console.error('❌ Erro geral na verificação de autenticação:', error);
       router.push('/login');
     } finally {
       setLoading(false);

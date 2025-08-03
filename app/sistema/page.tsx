@@ -136,21 +136,23 @@ export default function SistemaPage() {
           </Link>
 
           {/* Card: Listar Produtos */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer border border-gray-100">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <i className="ri-list-check text-blue-600 text-2xl"></i>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800">
-                  Listar Produtos
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  Ver todos os itens do estoque
-                </p>
+          <Link href="/listar">
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer border border-gray-100">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <i className="ri-list-check text-blue-600 text-2xl"></i>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Listar Produtos
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    Ver todos os itens do estoque
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          </Link>
 
           {/* Card: Relatórios */}
           <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer border border-gray-100">
