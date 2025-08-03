@@ -9,6 +9,7 @@ import { equipmentServiceAuth, authService, userService } from '../../lib/supaba
 interface NewEquipment {
   codigo: string;
   nome: string;
+  descricao: string;
   quantidade: number;
   categoria: string;
   foto?: string;
@@ -19,6 +20,7 @@ export default function AdicionarPage() {
   const [formData, setFormData] = useState<NewEquipment>({
     codigo: '',
     nome: '',
+    descricao: '',
     quantidade: 1,
     categoria: 'Infraestrutura'
   });
@@ -87,6 +89,7 @@ export default function AdicionarPage() {
       await equipmentServiceAuth.create({
         codigo: formData.codigo,
         nome: formData.nome,
+        descricao: formData.descricao,
         quantidade: formData.quantidade,
         categoria: formData.categoria,
         foto: formData.foto,
@@ -107,6 +110,7 @@ export default function AdicionarPage() {
           id: Date.now().toString(),
           codigo: formData.codigo,
           nome: formData.nome,
+          descricao: formData.descricao,
           quantidade: formData.quantidade,
           categoria: formData.categoria,
           foto: formData.foto,
@@ -138,7 +142,7 @@ export default function AdicionarPage() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -269,6 +273,22 @@ export default function AdicionarPage() {
                 onChange={handleChange}
                 placeholder="Ex: Notebook Dell Inspiron"
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                required
+              />
+            </div>
+
+            {/* Descrição */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Descrição
+              </label>
+              <textarea
+                name="descricao"
+                value={formData.descricao}
+                onChange={handleChange}
+                placeholder="Ex: Notebook para desenvolvimento, 8GB RAM, SSD 256GB"
+                rows={3}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
                 required
               />
             </div>
@@ -422,6 +442,9 @@ export default function AdicionarPage() {
                     <div>
                       <h3 className="font-medium text-gray-800">{formData.nome || 'Nome do equipamento'}</h3>
                       <p className="text-sm text-gray-500">{formData.codigo || 'Código do item'}</p>
+                      {formData.descricao && (
+                        <p className="text-xs text-gray-400 mt-1 line-clamp-2">{formData.descricao}</p>
+                      )}
                     </div>
                   </div>
                   <div className="text-right">
