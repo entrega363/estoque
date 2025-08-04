@@ -4,6 +4,7 @@
   "description": "Sistema completo para controle e gerenciamento de estoque de equipamentos",
   "start_url": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "background_color": "#000000",
   "theme_color": "#ff9500",
   "orientation": "portrait-primary",
@@ -120,6 +121,21 @@
   ],
   "related_applications": [],
   "prefer_related_applications": false,
+  "protocol_handlers": [
+    {
+      "protocol": "web+estoque",
+      "url": "/?action=%s"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/",
+      "accept": {
+        "text/csv": [".csv"],
+        "application/json": [".json"]
+      }
+    }
+  ],
   "edge_side_panel": {
     "preferred_width": 400
   }

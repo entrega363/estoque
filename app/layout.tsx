@@ -3,6 +3,7 @@ import "./globals.css";
 import PWAInstallPrompt from '../components/PWAInstallPrompt';
 import InstallButton from '../components/InstallButton';
 import PWADebug from '../components/PWADebug';
+import PWAInstallBanner from '../components/PWAInstallBanner';
 
 export const metadata: Metadata = {
   title: "Sistema de Controle de Estoque",
@@ -61,6 +62,7 @@ export default function RootLayout({
         <link rel="mask-icon" href="/icons/new-app-icon.svg" color="#ff9500" />
       </head>
       <body className="antialiased">
+        <PWAInstallBanner />
         {children}
         <PWAInstallPrompt />
         <InstallButton />

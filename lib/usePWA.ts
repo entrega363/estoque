@@ -416,11 +416,11 @@ export const usePWA = () => {
   }, []);
 
   const pwaState: PWAInstallState = {
-    isInstallable: !!installPrompt || isIOS(),
+    isInstallable: !!installPrompt || isIOS() || isAndroid(),
     isInstalled,
     isStandalone,
     platform: isIOS() ? 'ios' : isAndroid() ? 'android' : 'desktop',
-    canInstall: !!installPrompt || (isIOS() && !isStandalone),
+    canInstall: !!installPrompt || isIOS() || isAndroid() || true, // Sempre true para forçar
     isIOS: isIOS(),
     isAndroid: isAndroid()
   };

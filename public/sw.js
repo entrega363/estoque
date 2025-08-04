@@ -1,6 +1,6 @@
-const CACHE_NAME = 'estoque-sistema-v1.0.0';
-const STATIC_CACHE_NAME = 'estoque-static-v1.0.0';
-const DYNAMIC_CACHE_NAME = 'estoque-dynamic-v1.0.0';
+const CACHE_NAME = 'estoque-sistema-v2.0.0';
+const STATIC_CACHE_NAME = 'estoque-static-v2.0.0';
+const DYNAMIC_CACHE_NAME = 'estoque-dynamic-v2.0.0';
 
 // Arquivos para cache estático (sempre em cache)
 const STATIC_FILES = [
@@ -12,8 +12,15 @@ const STATIC_FILES = [
   '/adicionar',
   '/utilizados',
   '/manifest.json',
+  '/icons/icon-72x72.png',
+  '/icons/icon-96x96.png',
+  '/icons/icon-128x128.png',
+  '/icons/icon-144x144.png',
+  '/icons/icon-152x152.png',
   '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  '/icons/icon-384x384.png',
+  '/icons/icon-512x512.png',
+  '/icons/new-app-icon.svg'
 ];
 
 // Arquivos para cache dinâmico (cache conforme uso)

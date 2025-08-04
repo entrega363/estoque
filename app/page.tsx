@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import UniversalPWAInstaller from '../components/UniversalPWAInstaller';
 
 export default function Home() {
   const router = useRouter();
@@ -27,8 +28,10 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-md mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <UniversalPWAInstaller />
+      <div className="p-4">
+        <div className="max-w-md mx-auto">
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
           <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">
             Sistema de Controle de Estoque
@@ -55,6 +58,7 @@ export default function Home() {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }
