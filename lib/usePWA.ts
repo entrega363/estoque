@@ -101,28 +101,67 @@ export const usePWA = () => {
 
   // Instalar PWA
   const installPWA = async () => {
+    console.log('🚀 Tentando instalar PWA...');
+    console.log('📱 installPrompt disponível:', !!installPrompt);
+    console.log('🔍 Plataforma:', isIOS() ? 'iOS' : isAndroid() ? 'Android' : 'Desktop');
+    
     if (!installPrompt) {
-      // Para iOS, mostrar instruções manuais
+      console.log('❌ Nenhum installPrompt disponível');
+      
+      // Para iOS, sempre mostrar instruções
       if (isIOS()) {
+        console.log('📱 Mostrando instruções para iOS');
         setShowInstallPrompt(true);
-        return;
+        return false;
       }
-      return;
+      
+      // Para Android/Desktop sem prompt, tentar forçar
+      if (isAndroid() || !isMobile()) {
+        console.log('🔄 Tentando forçar detecção de instalação...');
+        
+        // Tentar disparar o evento manualmente
+        const event = new Event('beforeinstallprompt');
+        window.dispatchEvent(event);
+        
+        // Aguardar um pouco e tentar novamente
+        setTimeout(() => {
+          if (!installPrompt) {
+            console.log('⚠️ Não foi possível detectar suporte à instalação');
+            setShowInstallPrompt(true);
+          }
+        }, 500);
+        
+        return false;
+      }
+      
+      return false;
     }
 
     try {
+      console.log('✅ Executando prompt de instalação...');
       await installPrompt.prompt();
       const choiceResult = await installPrompt.userChoice;
       
+      console.log('📊 Resultado da escolha:', choiceResult.outcome);
+      
       if (choiceResult.outcome === 'accepted') {
-        console.log('PWA instalado com sucesso');
+        console.log('🎉 PWA instalado com sucesso!');
         setIsInstalled(true);
         localStorage.setItem('pwa-installed', 'true');
+        return true;
+      } else {
+        console.log('❌ Usuário rejeitou a instalação');
+        return false;
       }
       
-      setInstallPrompt(null);
     } catch (error) {
-      console.error('Erro ao instalar PWA:', error);
+      console.error('💥 Erro ao instalar PWA:', error);
+      
+      // Fallback: mostrar instruções manuais
+      setShowInstallPrompt(true);
+      return false;
+    } finally {
+      setInstallPrompt(null);
     }
   };
 
@@ -167,6 +206,27 @@ export const usePWA = () => {
   const incrementVisitCount = () => {
     const currentCount = parseInt(localStorage.getItem('pwa-visit-count') || '0');
     localStorage.setItem('pwa-visit-count', (currentCount + 1).toString());
+  };
+
+  // Forçar verificação de instalação
+  const forceInstallCheck = () => {
+    console.log('🔄 Forçando verificação de instalação...');
+    
+    // Limpar estado anterior
+    setInstallPrompt(null);
+    
+    // Tentar detectar novamente
+    setTimeout(() => {
+      const event = new Event('beforeinstallprompt');
+      (event as any).platforms = ['web'];
+      (event as any).userChoice = Promise.resolve({ outcome: 'accepted', platform: 'web' });
+      (event as any).prompt = async () => {
+        console.log('🚀 Prompt simulado executado');
+        return Promise.resolve();
+      };
+      
+      window.dispatchEvent(event);
+    }, 100);
   };
 
   useEffect(() => {
@@ -228,6 +288,7 @@ export const usePWA = () => {
     showInstallPrompt,
     setShowInstallPrompt,
     dismissInstall,
-    registerServiceWorker
+    registerServiceWorker,
+    forceInstallCheck
   };
 };

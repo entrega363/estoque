@@ -13,7 +13,7 @@ export default function SistemaPage() {
   const [userProfile, setUserProfile] = useState<any>(null);
   
   // PWA hook
-  const { canInstall, isInstalled, isStandalone, setShowInstallPrompt, installPWA, isIOS, isAndroid } = usePWA();
+  const { canInstall, isInstalled, isStandalone, setShowInstallPrompt, installPWA, isIOS, isAndroid, forceInstallCheck } = usePWA();
 
   useEffect(() => {
     checkAuth();
@@ -71,6 +71,63 @@ export default function SistemaPage() {
       router.push('/');
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
+    }
+  };
+
+  const handleInstallApp = async () => {
+    try {
+      if (isIOS) {
+        // Para iOS, mostrar instruções específicas
+        alert(`Para instalar no iOS:
+        
+1. Toque no botão Compartilhar (ícone de seta para cima)
+2. Role para baixo e toque em "Adicionar à Tela de Início"
+3. Toque em "Adicionar" no canto superior direito
+
+O app aparecerá na sua tela inicial!`);
+        return;
+      }
+
+      if (isAndroid || canInstall) {
+        // Para Android/Desktop, tentar instalação direta
+        await installPWA();
+        
+        // Se não funcionou, mostrar instruções
+        setTimeout(() => {
+          if (!isInstalled) {
+            if (isAndroid) {
+              alert(`Para instalar no Android:
+              
+1. Toque nos 3 pontos (⋮) no canto superior direito do Chrome
+2. Toque em "Instalar app" ou "Adicionar à tela inicial"
+3. Confirme tocando em "Instalar"
+
+Ou procure por um banner de instalação no topo da página!`);
+            } else {
+              alert(`Para instalar no Desktop:
+              
+1. Procure pelo ícone de instalação (⊕) na barra de endereços
+2. Ou clique nos 3 pontos (⋮) do navegador
+3. Selecione "Instalar Sistema de Estoque"
+4. Confirme a instalação
+
+O app aparecerá como um programa independente!`);
+            }
+          }
+        }, 1000);
+      } else {
+        // Fallback para outros casos
+        alert(`Para instalar este aplicativo:
+        
+• Chrome/Edge: Procure pelo ícone de instalação na barra de endereços
+• Safari (iOS): Use o botão Compartilhar → "Adicionar à Tela de Início"
+• Firefox: Pode não suportar instalação PWA
+
+Certifique-se de estar usando um navegador compatível!`);
+      }
+    } catch (error) {
+      console.error('Erro ao instalar app:', error);
+      alert('Erro ao instalar o aplicativo. Tente usar o menu do navegador para instalar.');
     }
   };
 
@@ -285,19 +342,32 @@ export default function SistemaPage() {
                 <h4 className="font-semibold text-green-800 mb-2">Ações</h4>
                 <div className="space-y-2">
                   <button
-                    onClick={() => setShowInstallPrompt(true)}
-                    className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                    onClick={handleInstallApp}
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 text-sm font-semibold shadow-lg"
                   >
-                    🚀 Mostrar Popup de Instalação
+                    📱 Instalar Aplicativo
                   </button>
-                  {canInstall && !isIOS && (
-                    <button
-                      onClick={installPWA}
-                      className="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors text-sm"
-                    >
-                      📱 Instalar Diretamente
-                    </button>
+                  
+                  {isIOS && (
+                    <div className="text-xs text-gray-600 bg-yellow-50 p-2 rounded border-l-4 border-yellow-400">
+                      <strong>iOS:</strong> Toque no botão Compartilhar <i className="ri-share-line"></i> e selecione "Adicionar à Tela de Início"
+                    </div>
                   )}
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setShowInstallPrompt(true)}
+                      className="bg-gray-500 text-white py-2 px-2 rounded-lg hover:bg-gray-600 transition-colors text-xs"
+                    >
+                      🔧 Popup
+                    </button>
+                    <button
+                      onClick={forceInstallCheck}
+                      className="bg-orange-500 text-white py-2 px-2 rounded-lg hover:bg-orange-600 transition-colors text-xs"
+                    >
+                      🔄 Forçar
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
