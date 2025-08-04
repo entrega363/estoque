@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService, userService } from '../../lib/supabase';
+import { usePWA } from '../../lib/usePWA';
 import Link from 'next/link';
 
 export default function SistemaPage() {
@@ -10,6 +11,9 @@ export default function SistemaPage() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
+  
+  // PWA hook
+  const { canInstall, isInstalled, isStandalone, setShowInstallPrompt, installPWA, isIOS, isAndroid } = usePWA();
 
   useEffect(() => {
     checkAuth();
@@ -259,6 +263,46 @@ export default function SistemaPage() {
           )}
 
         </div>
+
+        {/* PWA Install Test (apenas para teste) */}
+        {!isInstalled && !isStandalone && (
+          <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <i className="ri-smartphone-line text-blue-500"></i>
+              Instalar App (PWA)
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <h4 className="font-semibold text-blue-800 mb-2">Status PWA</h4>
+                <ul className="text-sm text-blue-700 space-y-1">
+                  <li>• Pode instalar: {canInstall ? '✅ Sim' : '❌ Não'}</li>
+                  <li>• Já instalado: {isInstalled ? '✅ Sim' : '❌ Não'}</li>
+                  <li>• Modo standalone: {isStandalone ? '✅ Sim' : '❌ Não'}</li>
+                  <li>• Plataforma: {isIOS ? 'iOS' : isAndroid ? 'Android' : 'Desktop'}</li>
+                </ul>
+              </div>
+              <div className="p-4 bg-green-50 rounded-lg">
+                <h4 className="font-semibold text-green-800 mb-2">Ações</h4>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => setShowInstallPrompt(true)}
+                    className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors text-sm"
+                  >
+                    🚀 Mostrar Popup de Instalação
+                  </button>
+                  {canInstall && !isIOS && (
+                    <button
+                      onClick={installPWA}
+                      className="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors text-sm"
+                    >
+                      📱 Instalar Diretamente
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Status do Sistema (apenas admin) */}
         {userProfile?.role === 'admin' && (
