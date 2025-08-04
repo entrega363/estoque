@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { usePWA } from '../lib/usePWA';
+import XiaomiInstallGuide from './XiaomiInstallGuide';
 
 export default function InstallButton() {
-  const { canInstall, isInstalled, isStandalone, installPWA, isIOS, isAndroid, getBrowserName, isChrome, isSamsung } = usePWA();
+  const { canInstall, isInstalled, isStandalone, installPWA, isIOS, isAndroid, getBrowserName, isChrome, isSamsung, isXiaomi, isMIUI, getDeviceInfo } = usePWA();
   const [showButton, setShowButton] = useState(false);
+  const [showXiaomiGuide, setShowXiaomiGuide] = useState(false);
 
   useEffect(() => {
     // Mostrar botão se pode instalar e não está instalado
@@ -36,7 +38,12 @@ O app aparecerá na sua tela inicial! 🎉`);
         return;
       }
       
-      // Mostrar instruções específicas por navegador
+      // Instruções específicas para Xiaomi/MIUI
+      if (isXiaomi() || isMIUI()) {
+        setShowXiaomiGuide(true);
+        return;
+      }
+      
       let instructions = '';
       
       if (isChrome()) {
@@ -88,14 +95,23 @@ O app ficará disponível como programa independente! 🎉`);
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
-      <button
-        onClick={handleInstall}
-        className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-3 rounded-full shadow-2xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 flex items-center gap-2 font-semibold text-sm"
-      >
-        <i className="ri-download-cloud-line text-lg"></i>
-        Instalar App
-      </button>
-    </div>
+    <>
+      <div className="fixed bottom-4 right-4 z-50">
+        <button
+          onClick={handleInstall}
+          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-3 rounded-full shadow-2xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 flex items-center gap-2 font-semibold text-sm"
+        >
+          <i className="ri-download-cloud-line text-lg"></i>
+          Instalar App
+        </button>
+      </div>
+
+      <XiaomiInstallGuide
+        isOpen={showXiaomiGuide}
+        onClose={() => setShowXiaomiGuide(false)}
+        deviceInfo={getDeviceInfo()}
+        browserName={getBrowserName()}
+      />
+    </>
   );
 }

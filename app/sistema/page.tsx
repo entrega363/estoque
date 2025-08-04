@@ -13,7 +13,7 @@ export default function SistemaPage() {
   const [userProfile, setUserProfile] = useState<any>(null);
   
   // PWA hook
-  const { canInstall, isInstalled, isStandalone, setShowInstallPrompt, installPWA, isIOS, isAndroid, forceInstallCheck, getBrowserName, isChrome, isSamsung } = usePWA();
+  const { canInstall, isInstalled, isStandalone, setShowInstallPrompt, installPWA, isIOS, isAndroid, forceInstallCheck, getBrowserName, isChrome, isSamsung, isXiaomi, isMIUI, getDeviceInfo } = usePWA();
 
   useEffect(() => {
     checkAuth();
@@ -98,9 +98,34 @@ export default function SistemaPage() {
         }
         
         // Instruções específicas por navegador Android
+        const deviceInfo = getDeviceInfo();
         let instructions = '';
         
-        if (isChrome()) {
+        if (isXiaomi() || isMIUI()) {
+          instructions = `📱 Para instalar no ${deviceInfo.device} (${deviceInfo.os || 'MIUI'}):
+
+🔹 MÉTODO 1 - Chrome (RECOMENDADO):
+1️⃣ Baixe e instale o Chrome da Play Store se não tiver
+2️⃣ Abra este site no Chrome (não no Mi Browser)
+3️⃣ Toque nos 3 pontos (⋮) no canto superior direito
+4️⃣ Procure por "Instalar app" ou "Adicionar à tela inicial"
+5️⃣ Toque em "Instalar" e confirme
+
+🔹 MÉTODO 2 - Mi Browser (pode criar apenas atalho):
+1️⃣ Toque no menu (≡) na parte inferior
+2️⃣ Procure por "Adicionar à tela inicial"
+3️⃣ Confirme a adição
+
+⚠️ CONFIGURAÇÃO IMPORTANTE PARA XIAOMI:
+Após instalar, faça isso para funcionar como app real:
+1️⃣ Vá em Configurações > Apps > Gerenciar apps
+2️⃣ Encontre "Sistema de Estoque" na lista
+3️⃣ Toque no app e vá em "Outras permissões"
+4️⃣ Ative "Exibir sobre outros apps"
+5️⃣ Ative "Modificar configurações do sistema"
+
+💡 Isso evita que seja apenas um atalho!`;
+        } else if (isChrome()) {
           instructions = `📱 Para instalar no Chrome Android:
 
 🔹 MÉTODO 1 - Menu do navegador:
@@ -370,7 +395,8 @@ export default function SistemaPage() {
                   <li>• Modo standalone: {isStandalone ? '✅ Sim' : '❌ Não'}</li>
                   <li>• Plataforma: {isIOS ? 'iOS' : isAndroid ? 'Android' : 'Desktop'}</li>
                   <li>• Navegador: {getBrowserName()}</li>
-                  <li>• Chrome: {isChrome() ? '✅' : '❌'} | Samsung: {isSamsung() ? '✅' : '❌'}</li>
+                  <li>• Dispositivo: {getDeviceInfo().device} {getDeviceInfo().os && `(${getDeviceInfo().os})`}</li>
+                  <li>• Chrome: {isChrome() ? '✅' : '❌'} | Samsung: {isSamsung() ? '✅' : '❌'} | Xiaomi: {isXiaomi() ? '✅' : '❌'}</li>
                 </ul>
               </div>
               <div className="p-4 bg-green-50 rounded-lg">

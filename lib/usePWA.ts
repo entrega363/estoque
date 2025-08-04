@@ -51,14 +51,45 @@ export const usePWA = () => {
     return /SamsungBrowser/.test(ua);
   };
 
+  const isXiaomi = () => {
+    const ua = getUserAgent();
+    return /Xiaomi|MIUI|Mi Browser/.test(ua);
+  };
+
+  const isMIUI = () => {
+    const ua = getUserAgent();
+    return /MIUI/.test(ua);
+  };
+
   const getBrowserName = () => {
     const ua = getUserAgent();
+    if (/Mi Browser/.test(ua)) return 'Mi Browser';
     if (/Chrome/.test(ua) && !/Edg/.test(ua)) return 'Chrome';
     if (/SamsungBrowser/.test(ua)) return 'Samsung Internet';
     if (/Firefox/.test(ua)) return 'Firefox';
     if (/Safari/.test(ua) && !/Chrome/.test(ua)) return 'Safari';
     if (/Edg/.test(ua)) return 'Edge';
     return 'Navegador desconhecido';
+  };
+
+  const getDeviceInfo = () => {
+    const ua = getUserAgent();
+    let device = 'Dispositivo desconhecido';
+    let os = '';
+    
+    if (/Xiaomi|MIUI/.test(ua)) {
+      device = 'Xiaomi';
+      if (/MIUI/.test(ua)) {
+        const miuiMatch = ua.match(/MIUI\/(\d+\.\d+)/);
+        os = miuiMatch ? `MIUI ${miuiMatch[1]}` : 'MIUI';
+      }
+    } else if (/Samsung/.test(ua)) {
+      device = 'Samsung';
+    } else if (/Huawei/.test(ua)) {
+      device = 'Huawei';
+    }
+    
+    return { device, os };
   };
 
   const isMobile = () => {
@@ -322,6 +353,9 @@ export const usePWA = () => {
     forceInstallCheck,
     getBrowserName,
     isChrome,
-    isSamsung
+    isSamsung,
+    isXiaomi,
+    isMIUI,
+    getDeviceInfo
   };
 };
