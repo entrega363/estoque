@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePWA } from '../lib/usePWA';
 
 export default function InstallButton() {
-  const { canInstall, isInstalled, isStandalone, installPWA, isIOS, isAndroid } = usePWA();
+  const { canInstall, isInstalled, isStandalone, installPWA, isIOS, isAndroid, getBrowserName, isChrome, isSamsung } = usePWA();
   const [showButton, setShowButton] = useState(false);
 
   useEffect(() => {
@@ -15,6 +15,8 @@ export default function InstallButton() {
   }, [canInstall, isInstalled, isStandalone, isIOS]);
 
   const handleInstall = async () => {
+    const browserName = getBrowserName();
+    
     if (isIOS) {
       alert(`📱 Para instalar no iPhone/iPad:
 
@@ -27,29 +29,57 @@ O app aparecerá na sua tela inicial! 🎉`);
     }
 
     if (isAndroid) {
-      const success = await installPWA();
-      if (!success) {
-        alert(`📱 Para instalar no Android:
-
-1️⃣ Toque nos 3 pontos (⋮) no Chrome
-2️⃣ Toque em "Instalar app"
-3️⃣ Confirme tocando em "Instalar"
-
-Ou procure por um banner no topo da página! 🎉`);
+      const result = await installPWA();
+      
+      if (result === true) {
+        // Instalação bem-sucedida
+        return;
       }
+      
+      // Mostrar instruções específicas por navegador
+      let instructions = '';
+      
+      if (isChrome()) {
+        instructions = `📱 Para instalar no Chrome Android:
+
+1️⃣ Toque nos 3 pontos (⋮) no canto superior direito
+2️⃣ Procure por "Instalar app" ou "Adicionar à tela inicial"
+3️⃣ Toque em "Instalar" e confirme
+
+💡 Dica: Também pode aparecer um banner no topo da página!`;
+      } else if (isSamsung()) {
+        instructions = `📱 Para instalar no Samsung Internet:
+
+1️⃣ Toque nos 3 linhas (≡) no canto inferior direito
+2️⃣ Toque em "Adicionar página a"
+3️⃣ Selecione "Tela inicial"
+4️⃣ Confirme a instalação
+
+O app aparecerá como ícone na tela inicial! 🎉`;
+      } else {
+        instructions = `📱 Para instalar no ${browserName}:
+
+1️⃣ Procure pelo menu do navegador (⋮ ou ≡)
+2️⃣ Procure por "Instalar app", "Adicionar à tela inicial" ou similar
+3️⃣ Confirme a instalação
+
+💡 Recomendamos usar o Chrome para melhor experiência PWA!`;
+      }
+      
+      alert(instructions);
       return;
     }
 
     // Desktop
-    const success = await installPWA();
-    if (!success) {
-      alert(`💻 Para instalar no computador:
+    const result = await installPWA();
+    if (result !== true) {
+      alert(`💻 Para instalar no computador (${browserName}):
 
 1️⃣ Procure pelo ícone ⊕ na barra de endereços
 2️⃣ Ou clique nos 3 pontos (⋮) do navegador
 3️⃣ Selecione "Instalar Sistema de Estoque"
 
-O app ficará disponível como programa! 🎉`);
+O app ficará disponível como programa independente! 🎉`);
     }
   };
 

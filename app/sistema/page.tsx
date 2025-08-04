@@ -13,7 +13,7 @@ export default function SistemaPage() {
   const [userProfile, setUserProfile] = useState<any>(null);
   
   // PWA hook
-  const { canInstall, isInstalled, isStandalone, setShowInstallPrompt, installPWA, isIOS, isAndroid, forceInstallCheck } = usePWA();
+  const { canInstall, isInstalled, isStandalone, setShowInstallPrompt, installPWA, isIOS, isAndroid, forceInstallCheck, getBrowserName, isChrome, isSamsung } = usePWA();
 
   useEffect(() => {
     checkAuth();
@@ -75,59 +75,92 @@ export default function SistemaPage() {
   };
 
   const handleInstallApp = async () => {
+    const browserName = getBrowserName();
+    
     try {
       if (isIOS) {
-        // Para iOS, mostrar instruções específicas
-        alert(`Para instalar no iOS:
+        alert(`📱 Para instalar no iOS (${browserName}):
         
-1. Toque no botão Compartilhar (ícone de seta para cima)
-2. Role para baixo e toque em "Adicionar à Tela de Início"
-3. Toque em "Adicionar" no canto superior direito
+1️⃣ Toque no botão Compartilhar (ícone ⬆️)
+2️⃣ Role para baixo e toque em "Adicionar à Tela de Início"
+3️⃣ Toque em "Adicionar" no canto superior direito
 
-O app aparecerá na sua tela inicial!`);
+✨ O app aparecerá na sua tela inicial como um aplicativo real!`);
         return;
       }
 
-      if (isAndroid || canInstall) {
-        // Para Android/Desktop, tentar instalação direta
-        await installPWA();
+      if (isAndroid) {
+        const result = await installPWA();
         
-        // Se não funcionou, mostrar instruções
-        setTimeout(() => {
-          if (!isInstalled) {
-            if (isAndroid) {
-              alert(`Para instalar no Android:
-              
-1. Toque nos 3 pontos (⋮) no canto superior direito do Chrome
-2. Toque em "Instalar app" ou "Adicionar à tela inicial"
-3. Confirme tocando em "Instalar"
-
-Ou procure por um banner de instalação no topo da página!`);
-            } else {
-              alert(`Para instalar no Desktop:
-              
-1. Procure pelo ícone de instalação (⊕) na barra de endereços
-2. Ou clique nos 3 pontos (⋮) do navegador
-3. Selecione "Instalar Sistema de Estoque"
-4. Confirme a instalação
-
-O app aparecerá como um programa independente!`);
-            }
-          }
-        }, 1000);
-      } else {
-        // Fallback para outros casos
-        alert(`Para instalar este aplicativo:
+        if (result === true) {
+          alert('🎉 Aplicativo instalado com sucesso!');
+          return;
+        }
         
-• Chrome/Edge: Procure pelo ícone de instalação na barra de endereços
-• Safari (iOS): Use o botão Compartilhar → "Adicionar à Tela de Início"
-• Firefox: Pode não suportar instalação PWA
+        // Instruções específicas por navegador Android
+        let instructions = '';
+        
+        if (isChrome()) {
+          instructions = `📱 Para instalar no Chrome Android:
 
-Certifique-se de estar usando um navegador compatível!`);
+🔹 MÉTODO 1 - Menu do navegador:
+1️⃣ Toque nos 3 pontos (⋮) no canto superior direito
+2️⃣ Procure por "Instalar app" ou "Adicionar à tela inicial"
+3️⃣ Toque em "Instalar" e confirme
+
+🔹 MÉTODO 2 - Banner automático:
+• Procure por um banner no topo da página
+• Toque em "Instalar" quando aparecer
+
+⚠️ Se não aparecer, recarregue a página algumas vezes!`;
+        } else if (isSamsung()) {
+          instructions = `📱 Para instalar no Samsung Internet:
+
+1️⃣ Toque nas 3 linhas (≡) no canto inferior direito
+2️⃣ Toque em "Adicionar página a"
+3️⃣ Selecione "Tela inicial"
+4️⃣ Confirme a instalação
+
+✨ O app aparecerá como ícone na tela inicial!`;
+        } else {
+          instructions = `📱 Para instalar no ${browserName}:
+
+1️⃣ Procure pelo menu do navegador (⋮ ou ≡)
+2️⃣ Procure por "Instalar app", "Adicionar à tela inicial" ou similar
+3️⃣ Confirme a instalação
+
+💡 Para melhor experiência, recomendamos usar o Chrome!`;
+        }
+        
+        alert(instructions);
+        return;
       }
+
+      // Desktop
+      const result = await installPWA();
+      
+      if (result === true) {
+        alert('🎉 Aplicativo instalado com sucesso no computador!');
+        return;
+      }
+      
+      alert(`💻 Para instalar no Desktop (${browserName}):
+              
+1️⃣ Procure pelo ícone de instalação (⊕) na barra de endereços
+2️⃣ Ou clique nos 3 pontos (⋮) do navegador
+3️⃣ Selecione "Instalar Sistema de Estoque"
+4️⃣ Confirme a instalação
+
+✨ O app aparecerá como um programa independente!`);
+      
     } catch (error) {
       console.error('Erro ao instalar app:', error);
-      alert('Erro ao instalar o aplicativo. Tente usar o menu do navegador para instalar.');
+      alert(`❌ Erro ao instalar o aplicativo.
+
+💡 Tente manualmente:
+• ${browserName}: Use o menu do navegador
+• Procure por "Instalar app" ou "Adicionar à tela inicial"
+• Recarregue a página se necessário`);
     }
   };
 
@@ -336,6 +369,8 @@ Certifique-se de estar usando um navegador compatível!`);
                   <li>• Já instalado: {isInstalled ? '✅ Sim' : '❌ Não'}</li>
                   <li>• Modo standalone: {isStandalone ? '✅ Sim' : '❌ Não'}</li>
                   <li>• Plataforma: {isIOS ? 'iOS' : isAndroid ? 'Android' : 'Desktop'}</li>
+                  <li>• Navegador: {getBrowserName()}</li>
+                  <li>• Chrome: {isChrome() ? '✅' : '❌'} | Samsung: {isSamsung() ? '✅' : '❌'}</li>
                 </ul>
               </div>
               <div className="p-4 bg-green-50 rounded-lg">

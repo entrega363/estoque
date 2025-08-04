@@ -41,6 +41,26 @@ export const usePWA = () => {
     return /Android/.test(ua);
   };
 
+  const isChrome = () => {
+    const ua = getUserAgent();
+    return /Chrome/.test(ua) && !/Edg/.test(ua);
+  };
+
+  const isSamsung = () => {
+    const ua = getUserAgent();
+    return /SamsungBrowser/.test(ua);
+  };
+
+  const getBrowserName = () => {
+    const ua = getUserAgent();
+    if (/Chrome/.test(ua) && !/Edg/.test(ua)) return 'Chrome';
+    if (/SamsungBrowser/.test(ua)) return 'Samsung Internet';
+    if (/Firefox/.test(ua)) return 'Firefox';
+    if (/Safari/.test(ua) && !/Chrome/.test(ua)) return 'Safari';
+    if (/Edg/.test(ua)) return 'Edge';
+    return 'Navegador desconhecido';
+  };
+
   const isMobile = () => {
     return isIOS() || isAndroid();
   };
@@ -101,68 +121,78 @@ export const usePWA = () => {
 
   // Instalar PWA
   const installPWA = async () => {
+    const browserName = getBrowserName();
     console.log('🚀 Tentando instalar PWA...');
     console.log('📱 installPrompt disponível:', !!installPrompt);
     console.log('🔍 Plataforma:', isIOS() ? 'iOS' : isAndroid() ? 'Android' : 'Desktop');
+    console.log('🌐 Navegador:', browserName);
     
-    if (!installPrompt) {
-      console.log('❌ Nenhum installPrompt disponível');
-      
-      // Para iOS, sempre mostrar instruções
-      if (isIOS()) {
-        console.log('📱 Mostrando instruções para iOS');
-        setShowInstallPrompt(true);
-        return false;
-      }
-      
-      // Para Android/Desktop sem prompt, tentar forçar
-      if (isAndroid() || !isMobile()) {
-        console.log('🔄 Tentando forçar detecção de instalação...');
-        
-        // Tentar disparar o evento manualmente
-        const event = new Event('beforeinstallprompt');
-        window.dispatchEvent(event);
-        
-        // Aguardar um pouco e tentar novamente
-        setTimeout(() => {
-          if (!installPrompt) {
-            console.log('⚠️ Não foi possível detectar suporte à instalação');
-            setShowInstallPrompt(true);
-          }
-        }, 500);
-        
-        return false;
-      }
-      
-      return false;
+    // Para iOS, sempre mostrar instruções específicas
+    if (isIOS()) {
+      console.log('📱 Mostrando instruções para iOS');
+      setShowInstallPrompt(true);
+      return 'ios-instructions';
     }
 
-    try {
-      console.log('✅ Executando prompt de instalação...');
-      await installPrompt.prompt();
-      const choiceResult = await installPrompt.userChoice;
-      
-      console.log('📊 Resultado da escolha:', choiceResult.outcome);
-      
-      if (choiceResult.outcome === 'accepted') {
-        console.log('🎉 PWA instalado com sucesso!');
-        setIsInstalled(true);
-        localStorage.setItem('pwa-installed', 'true');
-        return true;
+    // Para Android, tentar instalação automática primeiro
+    if (isAndroid()) {
+      if (installPrompt) {
+        try {
+          console.log('✅ Executando prompt de instalação Android...');
+          await installPrompt.prompt();
+          const choiceResult = await installPrompt.userChoice;
+          
+          console.log('📊 Resultado da escolha:', choiceResult.outcome);
+          
+          if (choiceResult.outcome === 'accepted') {
+            console.log('🎉 PWA instalado com sucesso no Android!');
+            setIsInstalled(true);
+            localStorage.setItem('pwa-installed', 'true');
+            return true;
+          } else {
+            console.log('❌ Usuário rejeitou a instalação');
+            return 'android-manual';
+          }
+        } catch (error) {
+          console.error('💥 Erro ao instalar PWA no Android:', error);
+          return 'android-manual';
+        } finally {
+          setInstallPrompt(null);
+        }
       } else {
-        console.log('❌ Usuário rejeitou a instalação');
-        return false;
+        console.log('❌ Nenhum installPrompt disponível no Android');
+        return 'android-manual';
       }
-      
-    } catch (error) {
-      console.error('💥 Erro ao instalar PWA:', error);
-      
-      // Fallback: mostrar instruções manuais
-      setShowInstallPrompt(true);
-      return false;
-    } finally {
-      setInstallPrompt(null);
     }
+
+    // Para Desktop
+    if (installPrompt) {
+      try {
+        console.log('✅ Executando prompt de instalação Desktop...');
+        await installPrompt.prompt();
+        const choiceResult = await installPrompt.userChoice;
+        
+        console.log('📊 Resultado da escolha:', choiceResult.outcome);
+        
+        if (choiceResult.outcome === 'accepted') {
+          console.log('🎉 PWA instalado com sucesso no Desktop!');
+          setIsInstalled(true);
+          localStorage.setItem('pwa-installed', 'true');
+          return true;
+        } else {
+          console.log('❌ Usuário rejeitou a instalação');
+          return 'desktop-manual';
+        }
+      } catch (error) {
+        console.error('💥 Erro ao instalar PWA no Desktop:', error);
+        return 'desktop-manual';
+      } finally {
+        setInstallPrompt(null);
+      }
+    }
+
+    console.log('⚠️ Nenhum método de instalação disponível');
+    return false;
   };
 
   // Verificar se pode mostrar prompt de instalação
@@ -289,6 +319,9 @@ export const usePWA = () => {
     setShowInstallPrompt,
     dismissInstall,
     registerServiceWorker,
-    forceInstallCheck
+    forceInstallCheck,
+    getBrowserName,
+    isChrome,
+    isSamsung
   };
 };
