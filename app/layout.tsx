@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import PWAInstallPrompt from '../components/PWAInstallPrompt';
 import InstallButton from '../components/InstallButton';
+import PWADebug from '../components/PWADebug';
 
 export const metadata: Metadata = {
   title: "Sistema de Controle de Estoque",
@@ -63,6 +64,7 @@ export default function RootLayout({
         {children}
         <PWAInstallPrompt />
         <InstallButton />
+        <PWADebug />
       </body>
     </html>
   );

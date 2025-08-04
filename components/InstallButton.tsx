@@ -11,8 +11,15 @@ export default function InstallButton() {
 
   useEffect(() => {
     // Mostrar botão se pode instalar e não está instalado
-    if (!isInstalled && !isStandalone && (canInstall || isIOS || isAndroid)) {
-      setShowButton(true);
+    if (!isInstalled && !isStandalone) {
+      // Sempre mostrar para mobile (iOS/Android)
+      if (isIOS || isAndroid) {
+        setShowButton(true);
+      }
+      // Para desktop, mostrar se tem canInstall ou forçar sempre
+      else if (canInstall || true) { // Forçar sempre mostrar
+        setShowButton(true);
+      }
     }
   }, [canInstall, isInstalled, isStandalone, isIOS, isAndroid]);
 

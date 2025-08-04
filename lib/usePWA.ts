@@ -322,25 +322,21 @@ export const usePWA = () => {
       if (lastRejected) {
         const rejectedTime = parseInt(lastRejected);
         const daysSinceRejection = (Date.now() - rejectedTime) / (1000 * 60 * 60 * 24);
-        if (daysSinceRejection < 3) return false; // Reduzido para 3 dias
+        if (daysSinceRejection < 0.1) return false; // Apenas 2.4 horas
       }
       return true; // Sempre mostrar no mobile se não foi rejeitado
     }
     
-    // Para desktop, verificar se tem installPrompt
-    if (!installPrompt) return false;
-    
-    // Não mostrar se já foi rejeitado recentemente
+    // Para desktop, sempre mostrar se não foi rejeitado muito recentemente
     const lastRejected = localStorage.getItem('pwa-install-rejected');
     if (lastRejected) {
       const rejectedTime = parseInt(lastRejected);
       const daysSinceRejection = (Date.now() - rejectedTime) / (1000 * 60 * 60 * 24);
-      if (daysSinceRejection < 7) return false;
+      if (daysSinceRejection < 0.1) return false; // Apenas 2.4 horas
     }
     
-    // Mostrar após primeira visita no desktop
-    const visitCount = parseInt(localStorage.getItem('pwa-visit-count') || '0');
-    return visitCount >= 1;
+    // Sempre mostrar no desktop se não foi rejeitado muito recentemente
+    return true;
   };
 
   // Rejeitar instalação
@@ -411,7 +407,7 @@ export const usePWA = () => {
       if (shouldShowInstallPrompt()) {
         setShowInstallPrompt(true);
       }
-    }, 2000); // 2 segundos após carregar
+    }, 500); // 0.5 segundos após carregar
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
