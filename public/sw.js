@@ -35,18 +35,30 @@ self.addEventListener('install', (event) => {
   console.log('Service Worker: Instalando...');
   
   event.waitUntil(
-    caches.open(STATIC_CACHE_NAME)
-      .then((cache) => {
-        console.log('Service Worker: Cache estático criado');
-        return cache.addAll(STATIC_FILES);
-      })
-      .then(() => {
-        console.log('Service Worker: Arquivos estáticos em cache');
-        return self.skipWaiting();
-      })
-      .catch((error) => {
-        console.error('Service Worker: Erro ao criar cache estático:', error);
-      })
+    Promise.all([
+      caches.open(STATIC_CACHE_NAME)
+        .then((cache) => {
+          console.log('Service Worker: Cache estático criado');
+          return cache.addAll(STATIC_FILES);
+        }),
+      // Forçar ativação imediata
+      self.skipWaiting()
+    ])
+    .then(() => {
+      console.log('Service Worker: Instalação completa');
+      // Notificar clientes sobre instalação
+      self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+          client.postMessage({
+            type: 'SW_INSTALLED',
+            message: 'Service Worker instalado com sucesso'
+          });
+        });
+      });
+    })
+    .catch((error) => {
+      console.error('Service Worker: Erro na instalação:', error);
+    })
   );
 });
 

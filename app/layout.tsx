@@ -4,6 +4,7 @@ import PWAInstallPrompt from '../components/PWAInstallPrompt';
 import InstallButton from '../components/InstallButton';
 import PWADebug from '../components/PWADebug';
 import PWAInstallBanner from '../components/PWAInstallBanner';
+import AndroidPWAInstaller from '../components/AndroidPWAInstaller';
 
 export const metadata: Metadata = {
   title: "Sistema de Controle de Estoque",
@@ -66,6 +67,7 @@ export default function RootLayout({
         {children}
         <PWAInstallPrompt />
         <InstallButton />
+        <AndroidPWAInstaller />
         <PWADebug />
       </body>
     </html>

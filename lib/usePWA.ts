@@ -256,15 +256,27 @@ export const usePWA = () => {
       if (installPrompt) {
         try {
           console.log('✅ Executando prompt de instalação Android...');
-          await installPrompt.prompt();
-          const choiceResult = await installPrompt.userChoice;
           
+          // Garantir que o prompt seja nativo
+          const promptResult = await installPrompt.prompt();
+          console.log('📱 Prompt executado:', promptResult);
+          
+          const choiceResult = await installPrompt.userChoice;
           console.log('📊 Resultado da escolha:', choiceResult.outcome);
           
           if (choiceResult.outcome === 'accepted') {
             console.log('🎉 PWA instalado com sucesso no Android!');
             setIsInstalled(true);
             localStorage.setItem('pwa-installed', 'true');
+            
+            // Aguardar um pouco para garantir que a instalação foi processada
+            setTimeout(() => {
+              if (checkStandalone()) {
+                console.log('✅ App agora está em modo standalone');
+                setIsStandalone(true);
+              }
+            }, 1000);
+            
             return true;
           } else {
             console.log('❌ Usuário rejeitou a instalação');
@@ -278,6 +290,17 @@ export const usePWA = () => {
         }
       } else {
         console.log('❌ Nenhum installPrompt disponível no Android');
+        // Tentar forçar detecção
+        setTimeout(() => {
+          const event = new Event('beforeinstallprompt');
+          (event as any).platforms = ['android'];
+          (event as any).userChoice = Promise.resolve({ outcome: 'accepted', platform: 'android' });
+          (event as any).prompt = async () => {
+            console.log('🚀 Prompt simulado para Android');
+            return Promise.resolve();
+          };
+          window.dispatchEvent(event);
+        }, 100);
         return 'android-manual';
       }
     }

@@ -2,9 +2,9 @@
   "name": "Sistema de Controle de Estoque",
   "short_name": "Estoque Pro",
   "description": "Sistema completo para controle e gerenciamento de estoque de equipamentos",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "display_override": ["standalone", "minimal-ui", "browser"],
   "background_color": "#000000",
   "theme_color": "#ff9500",
   "orientation": "portrait-primary",
@@ -138,5 +138,17 @@
   ],
   "edge_side_panel": {
     "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "share_target": {
+    "action": "/",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
   }
 }
