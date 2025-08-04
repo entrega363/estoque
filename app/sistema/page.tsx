@@ -36,6 +36,11 @@ export default function SistemaPage() {
         return;
       }
 
+      if (profile.status === 'suspended') {
+        router.push('/conta-suspensa');
+        return;
+      }
+      
       if (profile.status !== 'approved') {
         console.log('⏳ Usuário não aprovado ainda');
         router.push('/aguardando-aprovacao');
@@ -173,39 +178,43 @@ export default function SistemaPage() {
             </div>
           </Link>
 
-          {/* Card: Relatórios */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer border border-gray-100">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <i className="ri-bar-chart-line text-purple-600 text-2xl"></i>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800">
-                  Relatórios
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  Análises e estatísticas
-                </p>
+          {/* Card: Relatórios (apenas admin) */}
+          {userProfile?.role === 'admin' && (
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer border border-gray-100">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <i className="ri-bar-chart-line text-purple-600 text-2xl"></i>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Relatórios
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    Análises e estatísticas
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Card: Configurações */}
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer border border-gray-100">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                <i className="ri-settings-line text-gray-600 text-2xl"></i>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800">
-                  Configurações
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  Ajustes do sistema
-                </p>
+          {/* Card: Configurações (apenas admin) */}
+          {userProfile?.role === 'admin' && (
+            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer border border-gray-100">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <i className="ri-settings-line text-gray-600 text-2xl"></i>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Configurações
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    Ajustes do sistema
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Card: Usuários (apenas admin) */}
           {userProfile?.role === 'admin' && (
@@ -251,26 +260,28 @@ export default function SistemaPage() {
 
         </div>
 
-        {/* Status do Sistema */}
-        <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            Status do Sistema
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">Online</div>
-              <div className="text-sm text-gray-600">Sistema</div>
-            </div>
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">0</div>
-              <div className="text-sm text-gray-600">Produtos</div>
-            </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">1</div>
-              <div className="text-sm text-gray-600">Usuários</div>
+        {/* Status do Sistema (apenas admin) */}
+        {userProfile?.role === 'admin' && (
+          <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Status do Sistema
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center p-4 bg-green-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">Online</div>
+                <div className="text-sm text-gray-600">Sistema</div>
+              </div>
+              <div className="text-center p-4 bg-blue-50 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">0</div>
+                <div className="text-sm text-gray-600">Produtos</div>
+              </div>
+              <div className="text-center p-4 bg-purple-50 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600">1</div>
+                <div className="text-sm text-gray-600">Usuários</div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   );

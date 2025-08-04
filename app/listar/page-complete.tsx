@@ -60,9 +60,8 @@ export default function ListarPage() {
     } catch {
       return 'Data inválida';
     }
-  };
-
-  useEffect(() => {
+  }; 
+ useEffect(() => {
     checkAuthAndLoadEquipments();
   }, []);
 
@@ -79,12 +78,12 @@ export default function ListarPage() {
         router.push('/aguardando-aprovacao');
         return;
       }
-
+      
       if (profile.status === 'suspended') {
         router.push('/conta-suspensa');
         return;
       }
-
+      
       if (profile.status !== 'approved') {
         router.push('/aguardando-aprovacao');
         return;
@@ -131,9 +130,8 @@ export default function ListarPage() {
         setEquipamentosUtilizados([]);
       }
     }
-  };
-
-  // Filtrar equipamentos
+  };  // 
+Filtrar equipamentos
   const filteredEquipamentos = useMemo(() => {
     return equipamentos.filter(eq => {
       const matchesSearch = eq.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -204,9 +202,8 @@ export default function ListarPage() {
       console.error('Erro ao atualizar equipamento:', error);
       alert('Erro ao atualizar produto. Tente novamente.');
     }
-  };
-
-  const handleDelete = async (equipamento: Equipment) => {
+  }; 
+ const handleDelete = async (equipamento: Equipment) => {
     const confirmDelete = window.confirm(
       `Tem certeza que deseja deletar o produto "${equipamento.nome}"?\n\nEsta ação não pode ser desfeita.`
     );
@@ -275,9 +272,8 @@ export default function ListarPage() {
         </div>
       </div>
     );
-  }
+  }  return (
 
-  return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
@@ -304,6 +300,7 @@ export default function ListarPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
         {/* Estatísticas */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           <div className="bg-white rounded-xl shadow-lg p-6">
@@ -334,9 +331,8 @@ export default function ListarPage() {
                 <p className="text-xs text-gray-400">unidades em estoque</p>
               </div>
             </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-lg p-6">
+          </div>     
+     <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center">
               <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
                 <i className="ri-calendar-line text-orange-500 text-xl"></i>
@@ -382,9 +378,8 @@ export default function ListarPage() {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Filtros */}
+        </div> 
+       {/* Filtros */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Busca */}
@@ -423,9 +418,8 @@ export default function ListarPage() {
               </select>
             </div>
           </div>
-        </div>
-
-        {/* Lista de Equipamentos */}
+        </div>   
+     {/* Lista de Equipamentos */}
         {filteredEquipamentos.length === 0 ? (
           <div className="bg-white rounded-xl shadow-lg p-12 text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -486,9 +480,8 @@ export default function ListarPage() {
                     </p>
                     <p className="text-xs text-gray-400">unidades</p>
                   </div>
-                </div>
-
-                {/* Descrição */}
+                </div> 
+               {/* Descrição */}
                 {equipamento.descricao && (
                   <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                     {equipamento.descricao}
@@ -539,9 +532,8 @@ export default function ListarPage() {
               </div>
             ))}
           </div>
-        )}
-
-        {/* Modal de Retirar Equipamento */}
+        )}        
+{/* Modal de Retirar Equipamento */}
         {showWithdrawModal && selectedEquipment && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -606,9 +598,8 @@ export default function ListarPage() {
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                       required
                     />
-                  </div>
-
-                  <div>
+                  </div>       
+           <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Responsável *
                     </label>
@@ -654,147 +645,6 @@ export default function ListarPage() {
                     className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
                   >
                     Retirar do Estoque
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Modal de Editar Equipamento */}
-        {showEditModal && selectedEquipment && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    Editar Produto
-                  </h3>
-                  <button
-                    onClick={() => setShowEditModal(false)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <i className="ri-close-line text-xl"></i>
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Nome *
-                    </label>
-                    <input
-                      type="text"
-                      value={editForm.nome}
-                      onChange={(e) => setEditForm(prev => ({
-                        ...prev,
-                        nome: e.target.value
-                      }))}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Código *
-                    </label>
-                    <input
-                      type="text"
-                      value={editForm.codigo}
-                      onChange={(e) => setEditForm(prev => ({
-                        ...prev,
-                        codigo: e.target.value
-                      }))}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Categoria *
-                    </label>
-                    <select
-                      value={editForm.categoria}
-                      onChange={(e) => setEditForm(prev => ({
-                        ...prev,
-                        categoria: e.target.value
-                      }))}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    >
-                      <option value="">Selecione uma categoria</option>
-                      {categorias.map(categoria => (
-                        <option key={categoria} value={categoria}>
-                          {categoria}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Quantidade *
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={editForm.quantidade}
-                      onChange={(e) => setEditForm(prev => ({
-                        ...prev,
-                        quantidade: parseInt(e.target.value) || 0
-                      }))}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Descrição
-                    </label>
-                    <textarea
-                      value={editForm.descricao}
-                      onChange={(e) => setEditForm(prev => ({
-                        ...prev,
-                        descricao: e.target.value
-                      }))}
-                      placeholder="Descrição do produto (opcional)"
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      URL da Foto
-                    </label>
-                    <input
-                      type="url"
-                      value={editForm.foto}
-                      onChange={(e) => setEditForm(prev => ({
-                        ...prev,
-                        foto: e.target.value
-                      }))}
-                      placeholder="https://exemplo.com/foto.jpg"
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-3 mt-6">
-                  <button
-                    onClick={() => setShowEditModal(false)}
-                    className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={handleEditSubmit}
-                    className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                  >
-                    Salvar Alterações
                   </button>
                 </div>
               </div>

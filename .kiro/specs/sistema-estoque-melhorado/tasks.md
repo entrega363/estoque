@@ -29,7 +29,10 @@
     - Add search and filter state management
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 6.1, 6.2, 6.3_
 
-  - [ ] 3.2 Create equipment management actions
+  - [x] 3.2 Create equipment management actions
+
+
+
     - Implement addEquipment, updateEquipment, deleteEquipment functions
     - Add useEquipment and returnEquipment functions for usage tracking
     - Include validation and error handling for all operations

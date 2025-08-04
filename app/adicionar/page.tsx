@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { equipmentServiceAuth, authService, userService } from '../../lib/supabase';
+import { useImageCompression } from '../../lib/imageUtils';
 
 interface NewEquipment {
   codigo: string;
@@ -29,6 +30,10 @@ export default function AdicionarPage() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isCompressing, setIsCompressing] = useState(false);
+  
+  // Hook de compressão de imagem
+  const { compressImage } = useImageCompression();
 
   // Verificar autenticação
   useEffect(() => {
@@ -56,6 +61,11 @@ export default function AdicionarPage() {
           return;
         }
 
+        if (profile.status === 'suspended') {
+          router.push('/conta-suspensa');
+          return;
+        }
+        
         if (profile.status !== 'approved') {
           console.log('⏳ Usuário não aprovado, status:', profile.status);
           router.push('/aguardando-aprovacao');
@@ -191,31 +201,27 @@ export default function AdicionarPage() {
     }));
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // Verificar se é uma imagem
-      if (!file.type.startsWith('image/')) {
-        alert('Por favor, selecione apenas arquivos de imagem.');
-        return;
-      }
-      
-      // Verificar tamanho (máximo 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('A imagem deve ter no máximo 5MB.');
-        return;
-      }
+    if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result as string;
-        setPhotoPreview(result);
-        setFormData(prev => ({
-          ...prev,
-          foto: result
-        }));
-      };
-      reader.readAsDataURL(file);
+    setIsCompressing(true);
+    
+    try {
+      // Comprimir imagem automaticamente
+      const compressedImage = await compressImage(file);
+      
+      setPhotoPreview(compressedImage);
+      setFormData(prev => ({
+        ...prev,
+        foto: compressedImage
+      }));
+      
+    } catch (error: any) {
+      console.error('Erro na compressão:', error);
+      alert(error.message || 'Erro ao processar imagem. Tente novamente.');
+    } finally {
+      setIsCompressing(false);
     }
   };
 
@@ -312,7 +318,7 @@ export default function AdicionarPage() {
             {/* Descrição */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Descrição
+                Descrição (Opcional)
               </label>
               <textarea
                 name="descricao"
@@ -321,7 +327,6 @@ export default function AdicionarPage() {
                 placeholder="Ex: Notebook para desenvolvimento, 8GB RAM, SSD 256GB"
                 rows={3}
                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
-                required
               />
             </div>
 
@@ -401,9 +406,19 @@ export default function AdicionarPage() {
                     htmlFor="photo-upload"
                     className="w-full h-32 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-green-400 hover:bg-green-50 transition-colors"
                   >
-                    <i className="ri-camera-line text-3xl text-gray-400 mb-2"></i>
-                    <p className="text-sm text-gray-600 font-medium">Clique para adicionar foto</p>
-                    <p className="text-xs text-gray-400 mt-1">PNG, JPG até 5MB</p>
+                    {isCompressing ? (
+                      <>
+                        <i className="ri-loader-4-line text-3xl text-blue-500 mb-2 animate-spin"></i>
+                        <p className="text-sm text-blue-600 font-medium">Comprimindo imagem...</p>
+                        <p className="text-xs text-gray-400 mt-1">Aguarde um momento</p>
+                      </>
+                    ) : (
+                      <>
+                        <i className="ri-camera-line text-3xl text-gray-400 mb-2"></i>
+                        <p className="text-sm text-gray-600 font-medium">Clique para adicionar foto</p>
+                        <p className="text-xs text-gray-400 mt-1">PNG, JPG até 5MB (compressão automática)</p>
+                      </>
+                    )}
                   </label>
                 </div>
               ) : (

@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS equipamentos (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   codigo VARCHAR(50) NOT NULL,
   nome VARCHAR(255) NOT NULL,
+  descricao TEXT, -- Descrição detalhada do equipamento
   quantidade INTEGER NOT NULL DEFAULT 0,
   categoria VARCHAR(100) NOT NULL,
   foto TEXT, -- Base64 da imagem ou URL

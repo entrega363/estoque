@@ -1,0 +1,7 @@
+<svg width="1280" height="720" viewBox="0 0 1280 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="720" fill="#f3f4f6"/>
+  <rect x="0" y="0" width="1280" height="64" fill="#3b82f6"/>
+  <text x="640" y="40" text-anchor="middle" fill="white" font-family="Arial" font-size="24" font-weight="bold">Sistema de Controle de Estoque</text>
+  <rect x="64" y="128" width="1152" height="528" rx="8" fill="white"/>
+  <text x="640" y="400" text-anchor="middle" fill="#6b7280" font-family="Arial" font-size="32">Interface Principal do Sistema</text>
+</svg>

@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { cache } from './cache'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://rtajuzunzkoamruejtim.supabase.co'
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0YWp1enVuemtvYW1ydWVqdGltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxNDA0MTMsImV4cCI6MjA2OTcxNjQxM30.dlestmqzHPy-zMeJubohj13dvPaZ7MEUeoRti5OF0uU'
@@ -279,7 +280,7 @@ export const userService = {
   },
 
   // Atualizar status do usuário
-  async updateUserStatus(userId: string, status: 'approved' | 'inactive' | 'pending') {
+  async updateUserStatus(userId: string, status: 'approved' | 'inactive' | 'pending' | 'suspended') {
     const { data, error } = await supabase
       .from('user_profiles')
       .update({ 
@@ -347,8 +348,18 @@ export const userService = {
 
 // Atualizar equipmentService para filtrar por usuário
 export const equipmentServiceAuth = {
-  // Buscar equipamentos do usuário atual
-  async getByUser(userId: string) {
+  // Buscar equipamentos do usuário atual com cache
+  async getByUser(userId: string, useCache: boolean = true) {
+    const cacheKey = `equipments_user_${userId}`;
+    
+    // Tentar buscar do cache primeiro
+    if (useCache) {
+      const cached = cache.get(cacheKey);
+      if (cached) {
+        return cached;
+      }
+    }
+
     const { data, error } = await supabase
       .from('equipamentos')
       .select('*')
@@ -356,7 +367,50 @@ export const equipmentServiceAuth = {
       .order('created_at', { ascending: false })
     
     if (error) throw error
-    return data || []
+    
+    const result = data || [];
+    
+    // Salvar no cache por 5 minutos
+    if (useCache) {
+      cache.set(cacheKey, result, 5 * 60 * 1000);
+    }
+    
+    return result;
+  },
+
+  // Buscar equipamentos com paginação
+  async getByUserPaginated(userId: string, page: number = 1, limit: number = 20, search?: string) {
+    let query = supabase
+      .from('equipamentos')
+      .select('*', { count: 'exact' })
+      .eq('user_id', userId);
+
+    // Aplicar busca se fornecida
+    if (search && search.trim()) {
+      query = query.or(`nome.ilike.%${search}%,codigo.ilike.%${search}%,descricao.ilike.%${search}%`);
+    }
+
+    // Aplicar paginação
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    const { data, error, count } = await query
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (error) throw error;
+
+    return {
+      data: data || [],
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil((count || 0) / limit),
+        totalItems: count || 0,
+        itemsPerPage: limit,
+        hasNextPage: page < Math.ceil((count || 0) / limit),
+        hasPrevPage: page > 1
+      }
+    };
   },
 
   // Buscar todos os equipamentos (apenas admin)
@@ -381,6 +435,12 @@ export const equipmentServiceAuth = {
       .select()
     
     if (error) throw error
+    
+    // Invalidar cache do usuário
+    if (equipment.user_id) {
+      cache.delete(`equipments_user_${equipment.user_id}`);
+    }
+    
     return data?.[0]
   },
 
@@ -395,5 +455,52 @@ export const equipmentServiceAuth = {
     
     if (error) throw error
     return (data?.length || 0) > 0
+  },
+
+  // Deletar equipamento
+  async delete(equipmentId: string) {
+    // Primeiro buscar o equipamento para obter o user_id
+    const { data: equipment } = await supabase
+      .from('equipamentos')
+      .select('user_id')
+      .eq('id', equipmentId)
+      .single();
+
+    const { error } = await supabase
+      .from('equipamentos')
+      .delete()
+      .eq('id', equipmentId)
+    
+    if (error) throw error
+    
+    // Invalidar cache do usuário
+    if (equipment?.user_id) {
+      cache.delete(`equipments_user_${equipment.user_id}`);
+    }
+  },
+
+  // Atualizar equipamento
+  async update(equipmentId: string, updates: Partial<Equipment>) {
+    // Primeiro buscar o equipamento para obter o user_id
+    const { data: equipment } = await supabase
+      .from('equipamentos')
+      .select('user_id')
+      .eq('id', equipmentId)
+      .single();
+
+    const { data, error } = await supabase
+      .from('equipamentos')
+      .update(updates)
+      .eq('id', equipmentId)
+      .select()
+    
+    if (error) throw error
+    
+    // Invalidar cache do usuário
+    if (equipment?.user_id) {
+      cache.delete(`equipments_user_${equipment.user_id}`);
+    }
+    
+    return data?.[0]
   }
 }

@@ -1,0 +1,27 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fundo -->
+  <rect width="512" height="512" rx="64" fill="#3b82f6"/>
+  
+  <!-- Ícone de Estoque -->
+  <g transform="translate(128, 128)">
+    <!-- Caixa Principal -->
+    <rect x="64" y="96" width="128" height="96" rx="8" fill="white" opacity="0.9"/>
+    <rect x="64" y="96" width="128" height="16" rx="8" fill="white"/>
+    
+    <!-- Caixa Secundária -->
+    <rect x="32" y="64" width="128" height="96" rx="8" fill="white" opacity="0.7"/>
+    <rect x="32" y="64" width="128" height="16" rx="8" fill="white" opacity="0.9"/>
+    
+    <!-- Caixa Terciária -->
+    <rect x="96" y="32" width="128" height="96" rx="8" fill="white" opacity="0.5"/>
+    <rect x="96" y="32" width="128" height="16" rx="8" fill="white" opacity="0.7"/>
+    
+    <!-- Detalhes -->
+    <circle cx="80" cy="104" r="4" fill="#3b82f6"/>
+    <circle cx="48" cy="72" r="4" fill="#3b82f6"/>
+    <circle cx="112" cy="40" r="4" fill="#3b82f6"/>
+  </g>
+  
+  <!-- Texto -->
+  <text x="256" y="400" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="48" font-weight="bold">ESTOQUE</text>
+</svg>

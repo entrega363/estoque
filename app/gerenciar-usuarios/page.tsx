@@ -61,12 +61,28 @@ export default function GerenciarUsuariosPage() {
     }
   };
 
-  const updateUserStatus = async (userId: string, newStatus: 'approved' | 'inactive' | 'pending') => {
+  const updateUserStatus = async (userId: string, newStatus: 'approved' | 'inactive' | 'pending' | 'suspended') => {
     setUpdating(userId);
     try {
       await userService.updateUserStatus(userId, newStatus);
       await loadUsers(); // Recarregar lista
-      alert(`Usuário ${newStatus === 'approved' ? 'aprovado' : 'rejeitado'} com sucesso!`);
+      
+      let message = '';
+      switch(newStatus) {
+        case 'approved':
+          message = 'Usuário aprovado com sucesso!';
+          break;
+        case 'inactive':
+          message = 'Usuário rejeitado com sucesso!';
+          break;
+        case 'suspended':
+          message = 'Usuário suspenso com sucesso! Ele será notificado sobre as pendências.';
+          break;
+        default:
+          message = 'Status atualizado com sucesso!';
+      }
+      
+      alert(message);
     } catch (error) {
       console.error('Erro ao atualizar usuário:', error);
       alert('Erro ao atualizar usuário');
@@ -226,7 +242,7 @@ export default function GerenciarUsuariosPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Cadastrado em
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-80">
                     Ações
                   </th>
                 </tr>
@@ -250,10 +266,13 @@ export default function GerenciarUsuariosPage() {
                           ? 'bg-green-100 text-green-800'
                           : user.status === 'pending'
                           ? 'bg-yellow-100 text-yellow-800'
+                          : user.status === 'suspended'
+                          ? 'bg-orange-100 text-orange-800'
                           : 'bg-red-100 text-red-800'
                       }`}>
                         {user.status === 'approved' ? 'Aprovado' : 
-                         user.status === 'pending' ? 'Pendente' : 'Inativo'}
+                         user.status === 'pending' ? 'Pendente' : 
+                         user.status === 'suspended' ? 'Suspenso' : 'Inativo'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -269,14 +288,14 @@ export default function GerenciarUsuariosPage() {
                       {new Date(user.created_at).toLocaleDateString('pt-BR')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex gap-1">
+                      <div className="flex items-center gap-2">
                         {/* Botões para usuários pendentes */}
                         {user.status === 'pending' && (
                           <>
                             <button
                               onClick={() => updateUserStatus(user.id, 'approved')}
                               disabled={updating === user.id}
-                              className="text-green-600 hover:text-green-900 disabled:opacity-50 p-1 rounded hover:bg-green-50"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-lg transition-colors disabled:opacity-50"
                               title="Aprovar usuário"
                             >
                               {updating === user.id ? (
@@ -284,79 +303,134 @@ export default function GerenciarUsuariosPage() {
                               ) : (
                                 <i className="ri-check-line"></i>
                               )}
+                              Aprovar
                             </button>
                             <button
                               onClick={() => updateUserStatus(user.id, 'inactive')}
                               disabled={updating === user.id}
-                              className="text-red-600 hover:text-red-900 disabled:opacity-50 p-1 rounded hover:bg-red-50"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-700 bg-red-100 hover:bg-red-200 rounded-lg transition-colors disabled:opacity-50"
                               title="Rejeitar usuário"
                             >
                               <i className="ri-close-line"></i>
+                              Rejeitar
+                            </button>
+                          </>
+                        )}
+                        
+                        {/* Botões para usuários suspensos */}
+                        {user.status === 'suspended' && user.id !== currentUser?.id && (
+                          <>
+                            <button
+                              onClick={() => {
+                                if (window.confirm(`Tem certeza que deseja reativar o usuário "${user.nome}"?\n\nO usuário poderá acessar o sistema novamente.`)) {
+                                  updateUserStatus(user.id, 'approved');
+                                }
+                              }}
+                              disabled={updating === user.id}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-lg transition-colors disabled:opacity-50"
+                              title="Reativar usuário"
+                            >
+                              {updating === user.id ? (
+                                <i className="ri-loader-4-line animate-spin"></i>
+                              ) : (
+                                <i className="ri-play-circle-line"></i>
+                              )}
+                              Reativar
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (window.confirm(`Tem certeza que deseja rejeitar definitivamente o usuário "${user.nome}"?`)) {
+                                  updateUserStatus(user.id, 'inactive');
+                                }
+                              }}
+                              disabled={updating === user.id}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-700 bg-red-100 hover:bg-red-200 rounded-lg transition-colors disabled:opacity-50"
+                              title="Rejeitar usuário definitivamente"
+                            >
+                              <i className="ri-close-line"></i>
+                              Rejeitar
                             </button>
                           </>
                         )}
                         
                         {/* Botões para usuários aprovados (não admin atual) */}
-                        {user.id !== currentUser?.id && (
+                        {user.status === 'approved' && user.id !== currentUser?.id && (
                           <>
-                            {/* Botão de alterar role */}
-                            {user.status === 'approved' && (
-                              <button
-                                onClick={() => updateUserRole(
-                                  user.id, 
-                                  user.role === 'admin' ? 'user' : 'admin'
-                                )}
-                                disabled={updating === user.id}
-                                className="text-purple-600 hover:text-purple-900 disabled:opacity-50 p-1 rounded hover:bg-purple-50"
-                                title={user.role === 'admin' ? 'Remover admin' : 'Tornar admin'}
-                              >
-                                {updating === user.id ? (
-                                  <i className="ri-loader-4-line animate-spin"></i>
-                                ) : (
-                                  <i className="ri-admin-line"></i>
-                                )}
-                              </button>
-                            )}
-                            
-                            {/* Botão de ativar/desativar */}
                             <button
-                              onClick={() => toggleUserStatus(user.id, user.status)}
+                              onClick={() => updateUserRole(
+                                user.id, 
+                                user.role === 'admin' ? 'user' : 'admin'
+                              )}
                               disabled={updating === user.id}
-                              className={`disabled:opacity-50 p-1 rounded ${
-                                user.status === 'approved' 
-                                  ? 'text-orange-600 hover:text-orange-900 hover:bg-orange-50' 
-                                  : 'text-blue-600 hover:text-blue-900 hover:bg-blue-50'
-                              }`}
-                              title={user.status === 'approved' ? 'Desativar usuário' : 'Ativar usuário'}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-purple-700 bg-purple-100 hover:bg-purple-200 rounded-lg transition-colors disabled:opacity-50"
+                              title={user.role === 'admin' ? 'Remover privilégios de admin' : 'Tornar administrador'}
                             >
                               {updating === user.id ? (
                                 <i className="ri-loader-4-line animate-spin"></i>
-                              ) : user.status === 'approved' ? (
-                                <i className="ri-pause-circle-line"></i>
                               ) : (
-                                <i className="ri-play-circle-line"></i>
+                                <i className="ri-admin-line"></i>
                               )}
+                              {user.role === 'admin' ? 'Remover Admin' : 'Tornar Admin'}
                             </button>
                             
-                            {/* Botão de excluir */}
                             <button
-                              onClick={() => deleteUser(user.id, user.nome)}
+                              onClick={() => {
+                                if (window.confirm(`Tem certeza que deseja suspender o usuário "${user.nome}"?\n\nO usuário será notificado sobre as pendências e precisará entrar em contato com o administrador.`)) {
+                                  updateUserStatus(user.id, 'suspended');
+                                }
+                              }}
                               disabled={updating === user.id}
-                              className="text-red-600 hover:text-red-900 disabled:opacity-50 p-1 rounded hover:bg-red-50"
-                              title="Excluir usuário permanentemente"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-yellow-700 bg-yellow-100 hover:bg-yellow-200 rounded-lg transition-colors disabled:opacity-50"
+                              title="Suspender usuário por pendências"
                             >
                               {updating === user.id ? (
                                 <i className="ri-loader-4-line animate-spin"></i>
                               ) : (
-                                <i className="ri-delete-bin-line"></i>
+                                <i className="ri-pause-circle-line"></i>
                               )}
+                              Suspender
                             </button>
                           </>
                         )}
                         
+                        {/* Botões para usuários inativos */}
+                        {user.status === 'inactive' && user.id !== currentUser?.id && (
+                          <button
+                            onClick={() => updateUserStatus(user.id, 'approved')}
+                            disabled={updating === user.id}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors disabled:opacity-50"
+                            title="Ativar usuário"
+                          >
+                            {updating === user.id ? (
+                              <i className="ri-loader-4-line animate-spin"></i>
+                            ) : (
+                              <i className="ri-play-circle-line"></i>
+                            )}
+                            Ativar
+                          </button>
+                        )}
+                        
+                        {/* Botão de excluir (sempre disponível para não-admin atual) */}
+                        {user.id !== currentUser?.id && (
+                          <button
+                            onClick={() => deleteUser(user.id, user.nome)}
+                            disabled={updating === user.id}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-700 bg-red-100 hover:bg-red-200 rounded-lg transition-colors disabled:opacity-50"
+                            title="Excluir usuário permanentemente"
+                          >
+                            {updating === user.id ? (
+                              <i className="ri-loader-4-line animate-spin"></i>
+                            ) : (
+                              <i className="ri-delete-bin-line"></i>
+                            )}
+                            Excluir
+                          </button>
+                        )}
+                        
                         {/* Indicador para o usuário atual */}
                         {user.id === currentUser?.id && (
-                          <span className="text-xs text-gray-500 px-2 py-1 bg-gray-100 rounded">
+                          <span className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg">
+                            <i className="ri-user-line"></i>
                             Você
                           </span>
                         )}
