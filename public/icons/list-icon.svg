@@ -1,4 +1,31 @@
-<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="96" height="96" rx="12" fill="#3b82f6"/>
-  <text x="48" y="58" text-anchor="middle" fill="white" font-family="RemixIcon" font-size="32">&#xe0de;</text>
-</svg>
+<svg width="96" height="96" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="boxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#ff9500;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#ff7b00;stop-opacity:1" />
+      </linearGradient>
+      <linearGradient id="topGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#ffb84d;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#ff9500;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    
+    <!-- Background -->
+    <rect width="96" height="96" fill="#000000" rx="0"/>
+    
+    <!-- Main Box -->
+    <g transform="translate(14.399999999999999, 11.52)">
+      <!-- Box base -->
+      <path d="M 0 22.080000000000002 L 14.399999999999999 11.52 L 66.24 11.52 L 50.88 22.080000000000002 Z" fill="url(#topGrad)"/>
+      <path d="M 0 22.080000000000002 L 0 52.800000000000004 L 14.399999999999999 63.36 L 14.399999999999999 33.599999999999994 Z" fill="#e6750a"/>
+      <path d="M 14.399999999999999 33.599999999999994 L 14.399999999999999 63.36 L 66.24 63.36 L 66.24 33.599999999999994 Z" fill="url(#boxGrad)"/>
+      <path d="M 50.88 22.080000000000002 L 66.24 11.52 L 66.24 33.599999999999994 L 50.88 45.12 Z" fill="#cc6600"/>
+      <path d="M 0 22.080000000000002 L 50.88 22.080000000000002 L 50.88 45.12 L 0 52.800000000000004 Z" fill="#ff8c1a"/>
+    </g>
+    
+    <!-- Check mark circle -->
+    <g transform="translate(60, 60)">
+      <circle cx="12" cy="12" r="12" fill="#00cc44" stroke="#000000" stroke-width="1.44"/>
+      <path d="M 6 12 L 9.600000000000001 15.36 L 18 7.4879999999999995" stroke="#000000" stroke-width="2.208" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </g>
+  </svg>

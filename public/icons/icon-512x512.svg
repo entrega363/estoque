@@ -1,14 +1,31 @@
-<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="512" height="512" rx="64" fill="#3b82f6"/>
-  <g transform="translate(128, 128)">
-    <rect x="64" y="96" width="128" height="96" rx="8" fill="white" opacity="0.9"/>
-    <rect x="64" y="96" width="128" height="16" rx="8" fill="white"/>
-    <rect x="32" y="64" width="128" height="96" rx="8" fill="white" opacity="0.7"/>
-    <rect x="32" y="64" width="128" height="16" rx="8" fill="white" opacity="0.9"/>
-    <rect x="96" y="32" width="128" height="96" rx="8" fill="white" opacity="0.5"/>
-    <rect x="96" y="32" width="128" height="16" rx="8" fill="white" opacity="0.7"/>
-    <circle cx="80" cy="104" r="4" fill="#3b82f6"/>
-    <circle cx="48" cy="72" r="4" fill="#3b82f6"/>
-    <circle cx="112" cy="40" r="4" fill="#3b82f6"/>
-  </g>
-</svg>
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="boxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#ff9500;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#ff7b00;stop-opacity:1" />
+      </linearGradient>
+      <linearGradient id="topGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#ffb84d;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#ff9500;stop-opacity:1" />
+      </linearGradient>
+    </defs>
+    
+    <!-- Background -->
+    <rect width="512" height="512" fill="#000000" rx="0"/>
+    
+    <!-- Main Box -->
+    <g transform="translate(76.8, 61.44)">
+      <!-- Box base -->
+      <path d="M 0 117.76 L 76.8 61.44 L 353.28 61.44 L 271.36 117.76 Z" fill="url(#topGrad)"/>
+      <path d="M 0 117.76 L 0 281.6 L 76.8 337.92 L 76.8 179.2 Z" fill="#e6750a"/>
+      <path d="M 76.8 179.2 L 76.8 337.92 L 353.28 337.92 L 353.28 179.2 Z" fill="url(#boxGrad)"/>
+      <path d="M 271.36 117.76 L 353.28 61.44 L 353.28 179.2 L 271.36 240.64 Z" fill="#cc6600"/>
+      <path d="M 0 117.76 L 271.36 117.76 L 271.36 240.64 L 0 281.6 Z" fill="#ff8c1a"/>
+    </g>
+    
+    <!-- Check mark circle -->
+    <g transform="translate(320, 320)">
+      <circle cx="64" cy="64" r="64" fill="#00cc44" stroke="#000000" stroke-width="7.68"/>
+      <path d="M 32 64 L 51.2 81.92 L 96 39.936" stroke="#000000" stroke-width="11.776" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </g>
+  </svg>

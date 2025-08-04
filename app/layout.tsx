@@ -36,8 +36,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#3b82f6" },
-    { media: "(prefers-color-scheme: dark)", color: "#1e40af" }
+    { media: "(prefers-color-scheme: light)", color: "#ff9500" },
+    { media: "(prefers-color-scheme: dark)", color: "#ff7b00" }
   ],
   width: "device-width",
   initialScale: 1,
@@ -55,6 +55,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning={true}>
       <head>
         <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet" />
+        <link rel="icon" href="/icons/icon-192x192.png" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <link rel="mask-icon" href="/icons/new-app-icon.svg" color="#ff9500" />
       </head>
       <body className="antialiased">
         {children}
