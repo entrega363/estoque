@@ -2,8 +2,8 @@
 
 ## Último Deploy
 - **Data:** $(date)
-- **Commit:** a085c76
-- **Status:** Forçando novo deploy
+- **Commit:** FORÇANDO DEPLOY PARA sistema-estoque-2025
+- **Status:** Sincronizando PWA com projeto principal
 - **PWA:** Instalação nativa implementada
 
 ## Links
