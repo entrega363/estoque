@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService, userService } from '../../lib/supabase';
 import { usePWA } from '../../lib/usePWA';
+import UniversalInstallGuide from '../../components/UniversalInstallGuide';
 import Link from 'next/link';
 
 export default function SistemaPage() {
@@ -13,7 +14,8 @@ export default function SistemaPage() {
   const [userProfile, setUserProfile] = useState<any>(null);
   
   // PWA hook
-  const { canInstall, isInstalled, isStandalone, setShowInstallPrompt, installPWA, isIOS, isAndroid, forceInstallCheck, getBrowserName, isChrome, isSamsung, isXiaomi, isMIUI, getDeviceInfo } = usePWA();
+  const { canInstall, isInstalled, isStandalone, setShowInstallPrompt, installPWA, isIOS, isAndroid, forceInstallCheck, getBrowserName, getDeviceInfo } = usePWA();
+  const [showUniversalGuide, setShowUniversalGuide] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -75,117 +77,22 @@ export default function SistemaPage() {
   };
 
   const handleInstallApp = async () => {
-    const browserName = getBrowserName();
-    
     try {
-      if (isIOS) {
-        alert(`📱 Para instalar no iOS (${browserName}):
-        
-1️⃣ Toque no botão Compartilhar (ícone ⬆️)
-2️⃣ Role para baixo e toque em "Adicionar à Tela de Início"
-3️⃣ Toque em "Adicionar" no canto superior direito
-
-✨ O app aparecerá na sua tela inicial como um aplicativo real!`);
-        return;
-      }
-
-      if (isAndroid) {
-        const result = await installPWA();
-        
-        if (result === true) {
-          alert('🎉 Aplicativo instalado com sucesso!');
-          return;
-        }
-        
-        // Instruções específicas por navegador Android
-        const deviceInfo = getDeviceInfo();
-        let instructions = '';
-        
-        if (isXiaomi() || isMIUI()) {
-          instructions = `📱 Para instalar no ${deviceInfo.device} (${deviceInfo.os || 'MIUI'}):
-
-🔹 MÉTODO 1 - Chrome (RECOMENDADO):
-1️⃣ Baixe e instale o Chrome da Play Store se não tiver
-2️⃣ Abra este site no Chrome (não no Mi Browser)
-3️⃣ Toque nos 3 pontos (⋮) no canto superior direito
-4️⃣ Procure por "Instalar app" ou "Adicionar à tela inicial"
-5️⃣ Toque em "Instalar" e confirme
-
-🔹 MÉTODO 2 - Mi Browser (pode criar apenas atalho):
-1️⃣ Toque no menu (≡) na parte inferior
-2️⃣ Procure por "Adicionar à tela inicial"
-3️⃣ Confirme a adição
-
-⚠️ CONFIGURAÇÃO IMPORTANTE PARA XIAOMI:
-Após instalar, faça isso para funcionar como app real:
-1️⃣ Vá em Configurações > Apps > Gerenciar apps
-2️⃣ Encontre "Sistema de Estoque" na lista
-3️⃣ Toque no app e vá em "Outras permissões"
-4️⃣ Ative "Exibir sobre outros apps"
-5️⃣ Ative "Modificar configurações do sistema"
-
-💡 Isso evita que seja apenas um atalho!`;
-        } else if (isChrome()) {
-          instructions = `📱 Para instalar no Chrome Android:
-
-🔹 MÉTODO 1 - Menu do navegador:
-1️⃣ Toque nos 3 pontos (⋮) no canto superior direito
-2️⃣ Procure por "Instalar app" ou "Adicionar à tela inicial"
-3️⃣ Toque em "Instalar" e confirme
-
-🔹 MÉTODO 2 - Banner automático:
-• Procure por um banner no topo da página
-• Toque em "Instalar" quando aparecer
-
-⚠️ Se não aparecer, recarregue a página algumas vezes!`;
-        } else if (isSamsung()) {
-          instructions = `📱 Para instalar no Samsung Internet:
-
-1️⃣ Toque nas 3 linhas (≡) no canto inferior direito
-2️⃣ Toque em "Adicionar página a"
-3️⃣ Selecione "Tela inicial"
-4️⃣ Confirme a instalação
-
-✨ O app aparecerá como ícone na tela inicial!`;
-        } else {
-          instructions = `📱 Para instalar no ${browserName}:
-
-1️⃣ Procure pelo menu do navegador (⋮ ou ≡)
-2️⃣ Procure por "Instalar app", "Adicionar à tela inicial" ou similar
-3️⃣ Confirme a instalação
-
-💡 Para melhor experiência, recomendamos usar o Chrome!`;
-        }
-        
-        alert(instructions);
-        return;
-      }
-
-      // Desktop
+      // Tentar instalação automática primeiro
       const result = await installPWA();
       
       if (result === true) {
-        alert('🎉 Aplicativo instalado com sucesso no computador!');
+        alert('🎉 Aplicativo instalado com sucesso!');
         return;
       }
       
-      alert(`💻 Para instalar no Desktop (${browserName}):
-              
-1️⃣ Procure pelo ícone de instalação (⊕) na barra de endereços
-2️⃣ Ou clique nos 3 pontos (⋮) do navegador
-3️⃣ Selecione "Instalar Sistema de Estoque"
-4️⃣ Confirme a instalação
-
-✨ O app aparecerá como um programa independente!`);
+      // Se não funcionou automaticamente, mostrar guia universal
+      setShowUniversalGuide(true);
       
     } catch (error) {
       console.error('Erro ao instalar app:', error);
-      alert(`❌ Erro ao instalar o aplicativo.
-
-💡 Tente manualmente:
-• ${browserName}: Use o menu do navegador
-• Procure por "Instalar app" ou "Adicionar à tela inicial"
-• Recarregue a página se necessário`);
+      // Em caso de erro, também mostrar o guia
+      setShowUniversalGuide(true);
     }
   };
 
@@ -396,7 +303,7 @@ Após instalar, faça isso para funcionar como app real:
                   <li>• Plataforma: {isIOS ? 'iOS' : isAndroid ? 'Android' : 'Desktop'}</li>
                   <li>• Navegador: {getBrowserName()}</li>
                   <li>• Dispositivo: {getDeviceInfo().device} {getDeviceInfo().os && `(${getDeviceInfo().os})`}</li>
-                  <li>• Chrome: {isChrome() ? '✅' : '❌'} | Samsung: {isSamsung() ? '✅' : '❌'} | Xiaomi: {isXiaomi() ? '✅' : '❌'}</li>
+                  <li>• Marca: {getDeviceInfo().brand || 'Desconhecida'}</li>
                 </ul>
               </div>
               <div className="p-4 bg-green-50 rounded-lg">
@@ -457,6 +364,11 @@ Após instalar, faça isso para funcionar como app real:
             </div>
           </div>
         )}
+
+        <UniversalInstallGuide
+          isOpen={showUniversalGuide}
+          onClose={() => setShowUniversalGuide(false)}
+        />
       </main>
     </div>
   );

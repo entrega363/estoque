@@ -72,24 +72,110 @@ export const usePWA = () => {
     return 'Navegador desconhecido';
   };
 
+  const isHuawei = () => {
+    const ua = getUserAgent();
+    return /Huawei|Honor|EMUI|HarmonyOS/.test(ua);
+  };
+
+  const isOppo = () => {
+    const ua = getUserAgent();
+    return /OPPO|ColorOS/.test(ua);
+  };
+
+  const isVivo = () => {
+    const ua = getUserAgent();
+    return /vivo|Funtouch/.test(ua);
+  };
+
+  const isOnePlus = () => {
+    const ua = getUserAgent();
+    return /OnePlus|OxygenOS/.test(ua);
+  };
+
+  const isMotorola = () => {
+    const ua = getUserAgent();
+    return /Motorola|Moto/.test(ua);
+  };
+
+  const isLG = () => {
+    const ua = getUserAgent();
+    return /LG/.test(ua);
+  };
+
   const getDeviceInfo = () => {
     const ua = getUserAgent();
-    let device = 'Dispositivo desconhecido';
+    let device = 'Android';
     let os = '';
+    let brand = '';
     
+    // Detectar marca e sistema
     if (/Xiaomi|MIUI/.test(ua)) {
       device = 'Xiaomi';
+      brand = 'Xiaomi';
       if (/MIUI/.test(ua)) {
         const miuiMatch = ua.match(/MIUI\/(\d+\.\d+)/);
         os = miuiMatch ? `MIUI ${miuiMatch[1]}` : 'MIUI';
       }
     } else if (/Samsung/.test(ua)) {
       device = 'Samsung';
-    } else if (/Huawei/.test(ua)) {
-      device = 'Huawei';
+      brand = 'Samsung';
+      if (/One UI/.test(ua)) {
+        os = 'One UI';
+      }
+    } else if (/Huawei|Honor/.test(ua)) {
+      device = /Honor/.test(ua) ? 'Honor' : 'Huawei';
+      brand = 'Huawei';
+      if (/EMUI/.test(ua)) {
+        const emuiMatch = ua.match(/EMUI\/(\d+\.\d+)/);
+        os = emuiMatch ? `EMUI ${emuiMatch[1]}` : 'EMUI';
+      } else if (/HarmonyOS/.test(ua)) {
+        os = 'HarmonyOS';
+      }
+    } else if (/OPPO/.test(ua)) {
+      device = 'OPPO';
+      brand = 'OPPO';
+      if (/ColorOS/.test(ua)) {
+        const colorMatch = ua.match(/ColorOS\/(\d+\.\d+)/);
+        os = colorMatch ? `ColorOS ${colorMatch[1]}` : 'ColorOS';
+      }
+    } else if (/vivo/.test(ua)) {
+      device = 'Vivo';
+      brand = 'Vivo';
+      if (/Funtouch/.test(ua)) {
+        os = 'Funtouch OS';
+      }
+    } else if (/OnePlus/.test(ua)) {
+      device = 'OnePlus';
+      brand = 'OnePlus';
+      if (/OxygenOS/.test(ua)) {
+        os = 'OxygenOS';
+      }
+    } else if (/Motorola|Moto/.test(ua)) {
+      device = 'Motorola';
+      brand = 'Motorola';
+    } else if (/LG/.test(ua)) {
+      device = 'LG';
+      brand = 'LG';
+    } else if (/Sony/.test(ua)) {
+      device = 'Sony';
+      brand = 'Sony';
+    } else if (/Nokia/.test(ua)) {
+      device = 'Nokia';
+      brand = 'Nokia';
+    } else if (/Realme/.test(ua)) {
+      device = 'Realme';
+      brand = 'Realme';
     }
     
-    return { device, os };
+    // Detectar versão do Android
+    if (isAndroid() && !os) {
+      const androidMatch = ua.match(/Android (\d+\.\d+)/);
+      if (androidMatch) {
+        os = `Android ${androidMatch[1]}`;
+      }
+    }
+    
+    return { device, os, brand };
   };
 
   const isMobile = () => {
@@ -356,6 +442,12 @@ export const usePWA = () => {
     isSamsung,
     isXiaomi,
     isMIUI,
+    isHuawei,
+    isOppo,
+    isVivo,
+    isOnePlus,
+    isMotorola,
+    isLG,
     getDeviceInfo
   };
 };
