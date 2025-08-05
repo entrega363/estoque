@@ -3,6 +3,7 @@ import "./globals.css";
 import SuperPWAInstaller from '../components/SuperPWAInstaller';
 import XiaomiPWAFix from '../components/XiaomiPWAFix';
 import ForcePWAInstall from '../components/ForcePWAInstall';
+import InstantPWAInstaller from '../components/InstantPWAInstaller';
 
 export const metadata: Metadata = {
   title: "Sistema de Controle de Estoque",
@@ -76,9 +77,7 @@ export default function RootLayout({
         <link rel="preload" href="/sw.js" as="script" />
       </head>
       <body className="antialiased">
-        <XiaomiPWAFix />
-        <SuperPWAInstaller />
-        <ForcePWAInstall />
+        <InstantPWAInstaller />
         {children}
       </body>
     </html>
