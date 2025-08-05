@@ -7,10 +7,10 @@
   },
   "scripts": {
     "dev": "cross-env NODE_ENV=development next dev -H 0.0.0.0 -p 3000",
-    "build": "node scripts/ultimate-sync.js && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "vercel-build": "node scripts/ultimate-sync.js && next build"
+    "vercel-build": "next build"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.19.3",
