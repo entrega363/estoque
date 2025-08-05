@@ -12,8 +12,8 @@ export default function InstantPWAInstaller() {
     // Verificar se é mobile e não está instalado
     const isMobile = /Android|iPhone|iPad|iPod/.test(navigator.userAgent);
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-                        (window.navigator as any).standalone ||
-                        document.referrer.includes('android-app://');
+      (window.navigator as any).standalone ||
+      document.referrer.includes('android-app://');
 
     if (isMobile && !isStandalone) {
       // Detectar dispositivo
@@ -25,9 +25,9 @@ export default function InstantPWAInstaller() {
         isIOS: /iPhone|iPad|iPod/.test(ua),
         browser: getBrowser(ua)
       };
-      
+
       setDeviceInfo(info);
-      
+
       // Mostrar instalador após 2 segundos
       setTimeout(() => {
         setShowInstaller(true);
