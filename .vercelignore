@@ -1,9 +1,0 @@
-# Arquivos que devem ser ignorados pelo Vercel
-node_modules
-.next
-.env.local
-.git
-
-# Forçar rebuild limpo
-!scripts/promote-deployment.js
-!scripts/force-vercel-redeploy.js

@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // FORCE REBUILD - Timestamp: ${Date.now()}
   // Desabilitar ESLint durante o build
   eslint: {
     ignoreDuringBuilds: true,
@@ -13,6 +14,10 @@ const nextConfig = {
   // Configurações PWA
   experimental: {
     webpackBuildWorker: true,
+  },
+  // Força rebuild completo
+  generateBuildId: async () => {
+    return 'force-rebuild-' + Date.now()
   },
   
   async headers() {
