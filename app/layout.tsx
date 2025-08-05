@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import SuperPWAInstaller from '../components/SuperPWAInstaller';
 import XiaomiPWAFix from '../components/XiaomiPWAFix';
+import ForcePWAInstall from '../components/ForcePWAInstall';
 
 export const metadata: Metadata = {
   title: "Sistema de Controle de Estoque",
@@ -76,6 +77,7 @@ export default function RootLayout({
       <body className="antialiased">
         <XiaomiPWAFix />
         <SuperPWAInstaller />
+        <ForcePWAInstall />
         {children}
       </body>
     </html>
