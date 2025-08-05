@@ -306,15 +306,7 @@ export default function UtilizadosPage() {
                 <i className="ri-search-line absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
               </div>
             </div>
-            <div className="flex items-end">
-              <Link
-                href="/listar"
-                className="bg-orange-500 text-white px-6 py-3 rounded-xl hover:bg-orange-600 transition-colors flex items-center gap-2"
-              >
-                <i className="ri-arrow-left-line"></i>
-                Voltar ao Estoque
-              </Link>
-            </div>
+
           </div>
         </div>
 
