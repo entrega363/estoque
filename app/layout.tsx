@@ -56,8 +56,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning={true}>
       <head>
         <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet" />
-        <link rel="icon" href="/icons/icon-192x192.svg" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
         <link rel="mask-icon" href="/icons/app-icon.svg" color="#1e40af" />
         
         {/* PWA Meta Tags */}
