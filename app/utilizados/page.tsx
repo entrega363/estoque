@@ -23,6 +23,14 @@ export default function UtilizadosPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedEquipment, setSelectedEquipment] = useState<EquipmentUsed | null>(null);
+  const [editForm, setEditForm] = useState({
+    quantidade: 0,
+    local: '',
+    responsavel: '',
+    observacoes: ''
+  });
 
   useEffect(() => {
     checkAuthAndLoadEquipments();
@@ -104,16 +112,51 @@ export default function UtilizadosPage() {
   };
 
   const handleEdit = (equipmentId: string) => {
-    // Encontrar o equipamento pelo ID
     const equipamento = equipamentosUtilizados.find(eq => eq.id === equipmentId);
     if (!equipamento) {
       alert('Equipamento não encontrado');
       return;
     }
 
-    // Por enquanto, mostrar um alert com as informações
-    // Futuramente pode ser implementado um modal de edição
-    alert(`Editar equipamento:\n\nNome: ${equipamento.nome}\nCódigo: ${equipamento.codigo}\nLocal: ${equipamento.local}\nResponsável: ${equipamento.responsavel}\n\nFuncionalidade de edição será implementada em breve.`);
+    setSelectedEquipment(equipamento);
+    setEditForm({
+      quantidade: equipamento.quantidade,
+      local: equipamento.local,
+      responsavel: equipamento.responsavel,
+      observacoes: equipamento.observacoes || ''
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditSubmit = async () => {
+    if (!selectedEquipment) return;
+
+    if (!editForm.local || !editForm.responsavel) {
+      alert('Por favor, preencha o local e o responsável');
+      return;
+    }
+
+    if (editForm.quantidade <= 0) {
+      alert('A quantidade deve ser maior que zero');
+      return;
+    }
+
+    try {
+      await usedEquipmentService.update(selectedEquipment.id, {
+        quantidade: editForm.quantidade,
+        local: editForm.local,
+        responsavel: editForm.responsavel,
+        observacoes: editForm.observacoes
+      });
+
+      await loadUsedEquipments();
+      setShowEditModal(false);
+      setSelectedEquipment(null);
+      alert('Equipamento atualizado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao atualizar equipamento:', error);
+      alert('Erro ao atualizar equipamento. Tente novamente.');
+    }
   };
 
   const filteredEquipamentos = equipamentosUtilizados.filter(eq => {
@@ -397,6 +440,119 @@ export default function UtilizadosPage() {
           </div>
         )}
 
+        {/* Modal de Edição */}
+        {showEditModal && selectedEquipment && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Editar Equipamento
+                  </h3>
+                  <button
+                    onClick={() => setShowEditModal(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <i className="ri-close-line text-xl"></i>
+                  </button>
+                </div>
+
+                <div className="mb-6">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                      <i className="ri-tools-line text-orange-500"></i>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-800">{selectedEquipment.nome}</h4>
+                      <p className="text-sm text-gray-500">{selectedEquipment.codigo}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Quantidade em Uso
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={editForm.quantidade}
+                      onChange={(e) => setEditForm(prev => ({
+                        ...prev,
+                        quantidade: parseInt(e.target.value) || 1
+                      }))}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Local de Uso *
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.local}
+                      onChange={(e) => setEditForm(prev => ({
+                        ...prev,
+                        local: e.target.value
+                      }))}
+                      placeholder="Ex: Sala 101, Laboratório A"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Responsável *
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.responsavel}
+                      onChange={(e) => setEditForm(prev => ({
+                        ...prev,
+                        responsavel: e.target.value
+                      }))}
+                      placeholder="Nome do responsável"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Observações
+                    </label>
+                    <textarea
+                      value={editForm.observacoes}
+                      onChange={(e) => setEditForm(prev => ({
+                        ...prev,
+                        observacoes: e.target.value
+                      }))}
+                      placeholder="Observações adicionais (opcional)"
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <button
+                    onClick={() => setShowEditModal(false)}
+                    className="flex-1 px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleEditSubmit}
+                    className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  >
+                    Salvar Alterações
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
       </main>
     </div>

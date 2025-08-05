@@ -127,6 +127,18 @@ export const usedEquipmentService = {
     return data?.[0]
   },
 
+  // Atualizar equipamento utilizado
+  async update(id: string, updates: Partial<Omit<EquipmentUsed, 'id' | 'created_at' | 'updated_at'>>) {
+    const { data, error } = await supabase
+      .from('equipamentos_utilizados')
+      .update(updates)
+      .eq('id', id)
+      .select()
+    
+    if (error) throw error
+    return data?.[0]
+  },
+
   // Devolver equipamento (remover da lista de utilizados)
   async return(id: string) {
     const { error } = await supabase
