@@ -1,8 +1,13 @@
 # Status de Sincronização do Deploy
 
 ## Problema Identificado
-- Link secundário: `estoque2-aduj1f62w-entregasobrals-projects.vercel.app` - ✅ Funcionando
-- Link principal: Precisa ser sincronizado com as mesmas funcionalidades
+- Link funcionando: `estoque2-8e9ce7y5f.entregasobrals-projects.vercel.app` - ✅ Funcionando
+- Link principal: Precisa usar o mesmo deployment que está funcionando
+
+## Deployment Específico Identificado:
+- **URL funcionando:** estoque2-8e9ce7y5f.entregasobrals-projects.vercel.app
+- **Commit hash:** 422605d
+- **Status:** Todas as funcionalidades operacionais
 
 ## Funcionalidades que devem estar no link principal:
 1. ✅ Modal de edição funcional para equipamentos utilizados
