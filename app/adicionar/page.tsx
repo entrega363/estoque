@@ -536,20 +536,7 @@ export default function AdicionarPage() {
           </form>
         </div>
 
-        {/* Quick Actions */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h3 className="font-semibold text-gray-800 mb-4">Ações Rápidas</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <button className="p-3 bg-blue-50 text-blue-600 rounded-xl text-sm font-medium hover:bg-blue-100 transition-colors !rounded-button">
-              <i className="ri-scan-line text-lg mb-1 block"></i>
-              Escanear QR
-            </button>
-            <button className="p-3 bg-purple-50 text-purple-600 rounded-xl text-sm font-medium hover:bg-purple-100 transition-colors !rounded-button">
-              <i className="ri-file-excel-line text-lg mb-1 block"></i>
-              Importar Excel
-            </button>
-          </div>
-        </div>
+
       </div>
     </div>
   );

@@ -23,6 +23,14 @@ export default function UtilizadosPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedEquipment, setSelectedEquipment] = useState<EquipmentUsed | null>(null);
+  const [editForm, setEditForm] = useState({
+    quantidade: 0,
+    local: '',
+    responsavel: '',
+    observacoes: ''
+  });
 
   useEffect(() => {
     checkAuthAndLoadEquipments();
@@ -88,18 +96,45 @@ export default function UtilizadosPage() {
     }
   };
 
-  const handleReturn = async (equipmentId: string) => {
-    if (!window.confirm('Tem certeza que deseja devolver este equipamento ao estoque?')) {
+  const handleEdit = (equipamento: EquipmentUsed) => {
+    setSelectedEquipment(equipamento);
+    setEditForm({
+      quantidade: equipamento.quantidade || 0,
+      local: equipamento.local || '',
+      responsavel: equipamento.responsavel || '',
+      observacoes: equipamento.observacoes || ''
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditSubmit = async () => {
+    if (!selectedEquipment) return;
+
+    if (!editForm.local || !editForm.responsavel) {
+      alert('Por favor, preencha o local e o responsável');
+      return;
+    }
+
+    if (editForm.quantidade <= 0) {
+      alert('A quantidade deve ser maior que zero');
       return;
     }
 
     try {
-      await usedEquipmentService.return(equipmentId);
+      await usedEquipmentService.update(selectedEquipment.id, {
+        quantidade: editForm.quantidade,
+        local: editForm.local,
+        responsavel: editForm.responsavel,
+        observacoes: editForm.observacoes
+      });
+
       await loadUsedEquipments();
-      alert('Equipamento devolvido ao estoque com sucesso!');
+      setShowEditModal(false);
+      setSelectedEquipment(null);
+      alert('Equipamento utilizado atualizado com sucesso!');
     } catch (error) {
-      console.error('Erro ao devolver equipamento:', error);
-      alert('Erro ao devolver equipamento');
+      console.error('Erro ao atualizar equipamento utilizado:', error);
+      alert('Erro ao atualizar equipamento utilizado. Tente novamente.');
     }
   };
 
@@ -232,32 +267,82 @@ export default function UtilizadosPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex items-center gap-4">
+        {/* Área de Busca Melhorada */}
+        <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl shadow-xl p-8 mb-8">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-4">
+              <i className="ri-search-2-line text-white text-2xl"></i>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">
+              Buscar Equipamentos Utilizados
+            </h2>
+            <p className="text-orange-100">
+              Encontre rapidamente os equipamentos que foram retirados do estoque
+            </p>
+          </div>
+
+          <div className="flex flex-col lg:flex-row gap-6 items-end">
+            {/* Campo de Busca Principal */}
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Buscar
+              <label className="block text-sm font-medium text-orange-100 mb-3">
+                <i className="ri-search-line mr-2"></i>
+                Busca Geral
               </label>
-              <div className="relative">
+              <div className="relative group">
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Buscar por nome, código, local ou responsável..."
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full pl-12 pr-12 py-4 bg-white/95 backdrop-blur border-0 rounded-xl focus:outline-none focus:ring-4 focus:ring-white/30 focus:bg-white transition-all duration-300 text-gray-800 placeholder-gray-500 shadow-lg"
                 />
-                <i className="ri-search-line absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <i className="ri-search-line absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg group-focus-within:text-orange-500 transition-colors"></i>
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    <i className="ri-close-circle-line text-lg"></i>
+                  </button>
+                )}
               </div>
+              {searchTerm && (
+                <div className="mt-2 text-sm text-orange-100">
+                  <i className="ri-information-line mr-1"></i>
+                  Mostrando resultados para "{searchTerm}"
+                </div>
+              )}
             </div>
-            <div className="flex items-end">
+
+            {/* Botão Voltar */}
+            <div className="w-full lg:w-auto">
               <Link
                 href="/listar"
-                className="bg-orange-500 text-white px-6 py-3 rounded-xl hover:bg-orange-600 transition-colors flex items-center gap-2"
+                className="w-full lg:w-auto bg-white/20 backdrop-blur text-white px-6 py-4 rounded-xl hover:bg-white/30 transition-all duration-300 flex items-center justify-center gap-2 font-medium shadow-lg border border-white/20"
               >
-                <i className="ri-arrow-left-line"></i>
+                <i className="ri-arrow-left-line text-lg"></i>
                 Voltar ao Estoque
               </Link>
             </div>
+          </div>
+
+          {/* Informações de Resultado */}
+          <div className="mt-6 pt-6 border-t border-white/20">
+            <div className="flex items-center justify-between text-orange-100">
+              <div className="flex items-center gap-2">
+                <i className="ri-list-check text-lg"></i>
+                <span className="font-medium">
+                  {filteredEquipamentos.length} {filteredEquipamentos.length === 1 ? 'equipamento encontrado' : 'equipamentos encontrados'}
+                </span>
+              </div>
+              {filteredEquipamentos.length > 0 && (
+                <div className="text-sm">
+                  Total retirado: {filteredEquipamentos.reduce((total, eq) => total + (eq.quantidade || 0), 0)} unidades
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
           </div>
         </div>
 
@@ -358,16 +443,16 @@ export default function UtilizadosPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => handleReturn(equipamento.id)}
-                            className="text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1 rounded-lg transition-colors"
-                            title="Devolver ao estoque"
+                            onClick={() => handleEdit(equipamento)}
+                            className="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-lg transition-colors"
+                            title="Editar equipamento utilizado"
                           >
-                            <i className="ri-arrow-go-back-line mr-1"></i>
-                            Devolver
+                            <i className="ri-edit-line mr-1"></i>
+                            Editar
                           </button>
                           {equipamento.observacoes && (
                             <button
-                              className="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-lg transition-colors"
+                              className="text-gray-600 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 px-3 py-1 rounded-lg transition-colors"
                               title={equipamento.observacoes}
                             >
                               <i className="ri-information-line"></i>
@@ -383,6 +468,125 @@ export default function UtilizadosPage() {
           </div>
         )}
 
+        {/* Modal de Editar Equipamento Utilizado */}
+        {showEditModal && selectedEquipment && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Editar Equipamento Utilizado
+                  </h3>
+                  <button
+                    onClick={() => setShowEditModal(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <i className="ri-close-line text-xl"></i>
+                  </button>
+                </div>
+
+                <div className="mb-6">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                      <i className="ri-computer-line text-orange-500"></i>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-800">{selectedEquipment.nome}</h4>
+                      <p className="text-sm text-gray-500">{selectedEquipment.codigo}</p>
+                      <p className="text-xs text-blue-600 font-medium">
+                        <i className="ri-user-line mr-1"></i>
+                        José dos Santos Silva
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Quantidade Utilizada
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={editForm.quantidade}
+                      onChange={(e) => setEditForm(prev => ({
+                        ...prev,
+                        quantidade: parseInt(e.target.value) || 0
+                      }))}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Local de Uso *
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.local}
+                      onChange={(e) => setEditForm(prev => ({
+                        ...prev,
+                        local: e.target.value
+                      }))}
+                      placeholder="Ex: Sala 101, Laboratório A"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Responsável *
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.responsavel}
+                      onChange={(e) => setEditForm(prev => ({
+                        ...prev,
+                        responsavel: e.target.value
+                      }))}
+                      placeholder="Nome do responsável"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Observações
+                    </label>
+                    <textarea
+                      value={editForm.observacoes}
+                      onChange={(e) => setEditForm(prev => ({
+                        ...prev,
+                        observacoes: e.target.value
+                      }))}
+                      placeholder="Observações adicionais (opcional)"
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <button
+                    onClick={() => setShowEditModal(false)}
+                    className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleEditSubmit}
+                    className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                  >
+                    Salvar Alterações
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
       </main>
     </div>
