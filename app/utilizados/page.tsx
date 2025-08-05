@@ -103,6 +103,19 @@ export default function UtilizadosPage() {
     }
   };
 
+  const handleEdit = (equipmentId: string) => {
+    // Encontrar o equipamento pelo ID
+    const equipamento = equipamentosUtilizados.find(eq => eq.id === equipmentId);
+    if (!equipamento) {
+      alert('Equipamento não encontrado');
+      return;
+    }
+
+    // Por enquanto, mostrar um alert com as informações
+    // Futuramente pode ser implementado um modal de edição
+    alert(`Editar equipamento:\n\nNome: ${equipamento.nome}\nCódigo: ${equipamento.codigo}\nLocal: ${equipamento.local}\nResponsável: ${equipamento.responsavel}\n\nFuncionalidade de edição será implementada em breve.`);
+  };
+
   const filteredEquipamentos = equipamentosUtilizados.filter(eq => {
     if (!eq) return false;
     const searchLower = searchTerm.toLowerCase();
@@ -359,12 +372,12 @@ export default function UtilizadosPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => handleReturn(equipamento.id)}
-                            className="text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1 rounded-lg transition-colors"
-                            title="Devolver ao estoque"
+                            onClick={() => handleEdit(equipamento.id)}
+                            className="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-lg transition-colors"
+                            title="Editar equipamento"
                           >
-                            <i className="ri-arrow-go-back-line mr-1"></i>
-                            Devolver
+                            <i className="ri-edit-line mr-1"></i>
+                            Editar
                           </button>
                           {equipamento.observacoes && (
                             <button
