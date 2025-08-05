@@ -113,6 +113,8 @@ export default function SuperPWAInstaller() {
   // Instalar PWA
   const installPWA = async () => {
     console.log('🚀 Tentando instalar PWA...');
+    console.log('📱 Prompt disponível:', !!installPrompt);
+    console.log('🔍 User Agent:', getUserAgent().substring(0, 100));
     
     // Para iOS, sempre mostrar instruções
     if (isIOS()) {
@@ -120,32 +122,76 @@ export default function SuperPWAInstaller() {
       return 'ios-instructions';
     }
 
-    // Para Android e Desktop, tentar instalação automática
+    // Para Android e Desktop, tentar instalação automática primeiro
     if (installPrompt) {
       try {
+        console.log('✅ Executando prompt nativo...');
         await installPrompt.prompt();
         const choiceResult = await installPrompt.userChoice;
         
+        console.log('📊 Resultado:', choiceResult.outcome);
+        
         if (choiceResult.outcome === 'accepted') {
+          console.log('🎉 PWA instalado com sucesso!');
           setIsInstalled(true);
           localStorage.setItem('pwa-installed', 'true');
           setShowBanner(false);
+          
+          // Aguardar um pouco para verificar se entrou em modo standalone
+          setTimeout(() => {
+            if (checkStandalone()) {
+              console.log('✅ Modo standalone ativado');
+              setIsStandalone(true);
+            }
+          }, 2000);
+          
           return true;
         } else {
+          console.log('❌ Usuário rejeitou - mostrando instruções');
           setShowInstructions(true);
           return 'manual-instructions';
         }
       } catch (error) {
-        console.error('Erro ao instalar PWA:', error);
+        console.error('💥 Erro ao instalar PWA:', error);
         setShowInstructions(true);
         return 'manual-instructions';
       } finally {
         setInstallPrompt(null);
       }
     } else {
-      // Sem prompt nativo, mostrar instruções
-      setShowInstructions(true);
-      return 'manual-instructions';
+      console.log('⚠️ Nenhum prompt nativo disponível');
+      
+      // Tentar forçar detecção do prompt
+      const forcePromptDetection = () => {
+        console.log('🔄 Tentando forçar detecção do prompt...');
+        
+        // Disparar evento customizado para tentar ativar o prompt
+        const event = new Event('beforeinstallprompt');
+        (event as any).platforms = ['web'];
+        (event as any).userChoice = Promise.resolve({ outcome: 'accepted', platform: 'web' });
+        (event as any).prompt = async () => {
+          console.log('🚀 Prompt simulado executado');
+          // Tentar usar a API nativa se disponível
+          if ('getInstalledRelatedApps' in navigator) {
+            const relatedApps = await (navigator as any).getInstalledRelatedApps();
+            console.log('📱 Apps relacionados:', relatedApps);
+          }
+          return Promise.resolve();
+        };
+        
+        window.dispatchEvent(event);
+        
+        // Se ainda não tiver prompt após tentar, mostrar instruções
+        setTimeout(() => {
+          if (!installPrompt) {
+            console.log('❌ Prompt não detectado - mostrando instruções manuais');
+            setShowInstructions(true);
+          }
+        }, 500);
+      };
+      
+      forcePromptDetection();
+      return 'trying-detection';
     }
   };
 
@@ -298,45 +344,121 @@ export default function SuperPWAInstaller() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    console.log('🔧 Inicializando SuperPWAInstaller...');
+
     // Verificar estado inicial
     setIsInstalled(checkInstalled());
     setIsStandalone(checkStandalone());
     setDeviceInfo(getDeviceInfo());
 
-    // Registrar Service Worker
+    // Registrar Service Worker com verificações extras
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js', { scope: '/' })
-        .then(registration => console.log('SW registrado:', registration))
-        .catch(error => console.error('Erro SW:', error));
+      navigator.serviceWorker.register('/sw.js', { 
+        scope: '/',
+        updateViaCache: 'none' // Força verificação de atualizações
+      })
+        .then(registration => {
+          console.log('✅ SW registrado:', registration);
+          
+          // Verificar se há atualizações
+          registration.addEventListener('updatefound', () => {
+            console.log('🔄 Nova versão do SW encontrada');
+          });
+          
+          // Forçar ativação se necessário
+          if (registration.waiting) {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+        })
+        .catch(error => console.error('❌ Erro SW:', error));
     }
 
     // Listener para evento de instalação
     const handleBeforeInstallPrompt = (e: Event) => {
+      console.log('🎯 beforeinstallprompt detectado!');
       e.preventDefault();
       setInstallPrompt(e as BeforeInstallPromptEvent);
     };
 
     // Listener para quando o app é instalado
     const handleAppInstalled = () => {
+      console.log('🎉 App instalado com sucesso!');
       setIsInstalled(true);
       setInstallPrompt(null);
       localStorage.setItem('pwa-installed', 'true');
       setShowBanner(false);
     };
 
+    // Listener para mudanças no display mode
+    const handleDisplayModeChange = () => {
+      const isNowStandalone = checkStandalone();
+      console.log('📱 Display mode mudou:', isNowStandalone ? 'standalone' : 'browser');
+      setIsStandalone(isNowStandalone);
+      if (isNowStandalone) {
+        setIsInstalled(true);
+        localStorage.setItem('pwa-installed', 'true');
+        setShowBanner(false);
+      }
+    };
+
+    // Adicionar listeners
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
+    
+    // Listener para mudanças no media query
+    const standaloneQuery = window.matchMedia('(display-mode: standalone)');
+    standaloneQuery.addListener(handleDisplayModeChange);
+
+    // Verificação periódica do estado de instalação
+    const checkInterval = setInterval(() => {
+      const currentStandalone = checkStandalone();
+      const currentInstalled = checkInstalled();
+      
+      if (currentStandalone !== isStandalone) {
+        setIsStandalone(currentStandalone);
+      }
+      
+      if (currentInstalled !== isInstalled) {
+        setIsInstalled(currentInstalled);
+      }
+      
+      if (currentStandalone || currentInstalled) {
+        setShowBanner(false);
+      }
+    }, 3000); // Verificar a cada 3 segundos
 
     // Mostrar banner após um tempo
     setTimeout(() => {
       if (shouldShowBanner()) {
+        console.log('📢 Mostrando banner de instalação');
         setShowBanner(true);
       }
-    }, 2000); // 2 segundos após carregar
+    }, 1500); // 1.5 segundos após carregar
+
+    // Tentar forçar detecção do prompt após um tempo
+    setTimeout(() => {
+      if (!installPrompt && !isInstalled && !isStandalone) {
+        console.log('🔄 Tentando forçar detecção do prompt...');
+        
+        // Simular interação do usuário para ativar o prompt
+        const simulateUserGesture = () => {
+          const event = new MouseEvent('click', {
+            view: window,
+            bubbles: true,
+            cancelable: true,
+          });
+          document.body.dispatchEvent(event);
+        };
+        
+        simulateUserGesture();
+      }
+    }, 3000);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
+      standaloneQuery.removeListener(handleDisplayModeChange);
+      clearInterval(checkInterval);
     };
   }, []);
 

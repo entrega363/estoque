@@ -1,6 +1,6 @@
-const CACHE_NAME = 'estoque-sistema-v2.0.0';
-const STATIC_CACHE_NAME = 'estoque-static-v2.0.0';
-const DYNAMIC_CACHE_NAME = 'estoque-dynamic-v2.0.0';
+const CACHE_NAME = 'estoque-sistema-v2.1.0';
+const STATIC_CACHE_NAME = 'estoque-static-v2.1.0';
+const DYNAMIC_CACHE_NAME = 'estoque-dynamic-v2.1.0';
 
 // Arquivos para cache estático (sempre em cache)
 const STATIC_FILES = [
@@ -32,7 +32,7 @@ const DYNAMIC_FILES = [
 
 // Instalar Service Worker
 self.addEventListener('install', (event) => {
-  console.log('Service Worker: Instalando...');
+  console.log('Service Worker: Instalando v2.1.0...');
   
   event.waitUntil(
     Promise.all([
@@ -45,13 +45,14 @@ self.addEventListener('install', (event) => {
       self.skipWaiting()
     ])
     .then(() => {
-      console.log('Service Worker: Instalação completa');
+      console.log('Service Worker: Instalação completa v2.1.0');
       // Notificar clientes sobre instalação
       self.clients.matchAll().then(clients => {
         clients.forEach(client => {
           client.postMessage({
             type: 'SW_INSTALLED',
-            message: 'Service Worker instalado com sucesso'
+            message: 'Service Worker v2.1.0 instalado com sucesso',
+            version: '2.1.0'
           });
         });
       });
@@ -60,6 +61,22 @@ self.addEventListener('install', (event) => {
       console.error('Service Worker: Erro na instalação:', error);
     })
   );
+});
+
+// Listener para mensagens do cliente
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('Service Worker: Pulando espera e ativando...');
+    self.skipWaiting();
+  }
+  
+  if (event.data && event.data.type === 'GET_VERSION') {
+    event.ports[0].postMessage({
+      type: 'VERSION_RESPONSE',
+      version: '2.1.0',
+      caches: [STATIC_CACHE_NAME, DYNAMIC_CACHE_NAME]
+    });
+  }
 });
 
 // Ativar Service Worker
