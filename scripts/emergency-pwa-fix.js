@@ -7,14 +7,18 @@ async function emergencyCleanup() {
   
   try {
     // Limpar todos os caches
-    const cacheNames = await caches.keys();
-    await Promise.all(cacheNames.map(name => caches.delete(name)));
-    console.log(`✅ ${cacheNames.length} caches removidos`);
+    if ('caches' in window) {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map(name => caches.delete(name)));
+      console.log('✅ ' + cacheNames.length + ' caches removidos');
+    }
     
     // Desregistrar todos os Service Workers
-    const registrations = await navigator.serviceWorker.getRegistrations();
-    await Promise.all(registrations.map(reg => reg.unregister()));
-    console.log(`✅ ${registrations.length} Service Workers removidos`);
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map(reg => reg.unregister()));
+      console.log('✅ ' + registrations.length + ' Service Workers removidos');
+    }
     
     // Limpar localStorage
     localStorage.clear();
@@ -31,33 +35,23 @@ async function reconfigurePWA() {
   console.log('🔧 Reconfigurando PWA...');
   
   try {
-    // Registrar Service Worker
-    const registration = await navigator.serviceWorker.register('/sw.js', {
-      scope: '/',
-      updateViaCache: 'none'
-    });
-    
-    console.log('✅ Service Worker registrado');
-    
-    // Aguardar ativação
-    await new Promise((resolve) => {
+    if ('serviceWorker' in navigator) {
+      // Registrar Service Worker
+      const registration = await navigator.serviceWorker.register('/sw.js', {
+        scope: '/',
+        updateViaCache: 'none'
+      });
+      
+      console.log('✅ Service Worker registrado');
+      
+      // Aguardar ativação
       if (registration.active) {
-        resolve(registration);
+        console.log('✅ Service Worker já ativo');
       } else {
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          if (newWorker) {
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'activated') {
-                resolve(registration);
-              }
-            });
-          }
-        });
+        console.log('⏳ Aguardando ativação do Service Worker...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
-    });
-    
-    console.log('✅ Service Worker ativo');
+    }
     
   } catch (error) {
     console.error('❌ Erro na reconfiguração:', error);
