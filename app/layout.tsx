@@ -1,10 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import PWAInstallPrompt from '../components/PWAInstallPrompt';
-import InstallButton from '../components/InstallButton';
-import PWADebug from '../components/PWADebug';
-import PWAInstallBanner from '../components/PWAInstallBanner';
-import AndroidPWAInstaller from '../components/AndroidPWAInstaller';
+import SuperPWAInstaller from '../components/SuperPWAInstaller';
 
 export const metadata: Metadata = {
   title: "Sistema de Controle de Estoque",
@@ -63,12 +59,8 @@ export default function RootLayout({
         <link rel="mask-icon" href="/icons/new-app-icon.svg" color="#ff9500" />
       </head>
       <body className="antialiased">
-        <PWAInstallBanner />
+        <SuperPWAInstaller />
         {children}
-        <PWAInstallPrompt />
-        <InstallButton />
-        <AndroidPWAInstaller />
-        <PWADebug />
       </body>
     </html>
   );
