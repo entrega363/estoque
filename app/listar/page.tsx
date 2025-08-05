@@ -384,43 +384,136 @@ export default function ListarPage() {
           </div>
         </div>
 
-        {/* Filtros */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Busca */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Buscar
+        {/* Área de Busca Melhorada */}
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl shadow-xl p-8 mb-8">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-4">
+              <i className="ri-search-2-line text-white text-2xl"></i>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">
+              Buscar Produtos
+            </h2>
+            <p className="text-blue-100">
+              Encontre rapidamente os equipamentos que você precisa
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Campo de Busca Principal */}
+            <div className="lg:col-span-2">
+              <label className="block text-sm font-medium text-blue-100 mb-3">
+                <i className="ri-search-line mr-2"></i>
+                Busca Geral
               </label>
-              <div className="relative">
+              <div className="relative group">
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Buscar por nome, código ou descrição..."
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-12 pr-12 py-4 bg-white/95 backdrop-blur border-0 rounded-xl focus:outline-none focus:ring-4 focus:ring-white/30 focus:bg-white transition-all duration-300 text-gray-800 placeholder-gray-500 shadow-lg"
                 />
-                <i className="ri-search-line absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <i className="ri-search-line absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg group-focus-within:text-blue-500 transition-colors"></i>
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    <i className="ri-close-circle-line text-lg"></i>
+                  </button>
+                )}
               </div>
+              {searchTerm && (
+                <div className="mt-2 text-sm text-blue-100">
+                  <i className="ri-information-line mr-1"></i>
+                  Mostrando resultados para "{searchTerm}"
+                </div>
+              )}
             </div>
 
-            {/* Categoria */}
+            {/* Filtro de Categoria */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-blue-100 mb-3">
+                <i className="ri-folder-line mr-2"></i>
                 Categoria
               </label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
-              >
-                <option value="">Todas as categorias</option>
-                {categorias.map(categoria => (
-                  <option key={categoria} value={categoria}>
-                    {categoria}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full px-4 py-4 bg-white/95 backdrop-blur border-0 rounded-xl focus:outline-none focus:ring-4 focus:ring-white/30 focus:bg-white transition-all duration-300 text-gray-800 appearance-none shadow-lg cursor-pointer"
+                >
+                  <option value="">Todas as categorias</option>
+                  {categorias.map(categoria => (
+                    <option key={categoria} value={categoria}>
+                      {categoria}
+                    </option>
+                  ))}
+                </select>
+                <i className="ri-arrow-down-s-line absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+              </div>
+            </div>
+          </div>
+
+          {/* Filtros Ativos */}
+          {(searchTerm || selectedCategory) && (
+            <div className="mt-6 pt-6 border-t border-white/20">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-sm text-blue-100 font-medium">
+                  <i className="ri-filter-line mr-2"></i>
+                  Filtros ativos:
+                </span>
+                {searchTerm && (
+                  <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur text-white text-sm rounded-full">
+                    <i className="ri-search-line text-xs"></i>
+                    "{searchTerm}"
+                    <button
+                      onClick={() => setSearchTerm('')}
+                      className="hover:text-red-200 transition-colors"
+                    >
+                      <i className="ri-close-line text-xs"></i>
+                    </button>
+                  </span>
+                )}
+                {selectedCategory && (
+                  <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur text-white text-sm rounded-full">
+                    <i className="ri-folder-line text-xs"></i>
+                    {selectedCategory}
+                    <button
+                      onClick={() => setSelectedCategory('')}
+                      className="hover:text-red-200 transition-colors"
+                    >
+                      <i className="ri-close-line text-xs"></i>
+                    </button>
+                  </span>
+                )}
+                <button
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSelectedCategory('');
+                  }}
+                  className="text-sm text-blue-100 hover:text-white underline transition-colors"
+                >
+                  Limpar todos
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Resultados da Busca */}
+          <div className="mt-6 pt-6 border-t border-white/20">
+            <div className="flex items-center justify-between text-blue-100">
+              <div className="flex items-center gap-2">
+                <i className="ri-list-check text-lg"></i>
+                <span className="font-medium">
+                  {filteredEquipamentos.length} {filteredEquipamentos.length === 1 ? 'produto encontrado' : 'produtos encontrados'}
+                </span>
+              </div>
+              {filteredEquipamentos.length > 0 && (
+                <div className="text-sm">
+                  Total: {filteredEquipamentos.reduce((total, eq) => total + eq.quantidade, 0)} unidades
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -477,6 +570,10 @@ export default function ListarPage() {
                       </h3>
                       <p className="text-sm text-gray-500">
                         {equipamento.codigo}
+                      </p>
+                      <p className="text-xs text-blue-600 font-medium">
+                        <i className="ri-user-line mr-1"></i>
+                        José dos Santos Silva
                       </p>
                     </div>
                   </div>
@@ -566,6 +663,10 @@ export default function ListarPage() {
                     <div>
                       <h4 className="font-medium text-gray-800">{selectedEquipment.nome}</h4>
                       <p className="text-sm text-gray-500">{selectedEquipment.codigo}</p>
+                      <p className="text-xs text-blue-600 font-medium mb-1">
+                        <i className="ri-user-line mr-1"></i>
+                        José dos Santos Silva
+                      </p>
                       <p className="text-sm text-green-600">
                         Disponível: {selectedEquipment.quantidade} unidades
                       </p>
@@ -681,16 +782,13 @@ export default function ListarPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Nome *
+                      Proprietário *
                     </label>
                     <input
                       type="text"
-                      value={editForm.nome}
-                      onChange={(e) => setEditForm(prev => ({
-                        ...prev,
-                        nome: e.target.value
-                      }))}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value="José dos Santos Silva"
+                      readOnly
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
                       required
                     />
                   </div>

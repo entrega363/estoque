@@ -188,18 +188,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Admin Info */}
-        <div className="mt-6 bg-white/50 backdrop-blur rounded-xl p-4">
-          <div className="text-center">
-            <p className="text-sm text-gray-600 mb-2">
-              <i className="ri-admin-line text-blue-500"></i> Acesso Administrativo
-            </p>
-            <p className="text-xs text-gray-500">
-              Email: entregasobral@gmail.com<br/>
-              Senha: tenderbr0
-            </p>
-          </div>
-        </div>
+
       </div>
     </div>
   );
