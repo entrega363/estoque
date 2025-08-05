@@ -54,7 +54,7 @@ export default function Home() {
         
         <div className="bg-white/50 backdrop-blur rounded-xl p-4 text-center">
           <p className="text-sm text-gray-600">
-            Feito por José dos Santos Silva 👨‍💻
+            Feito por José dos Santos Silva - Técnico de Infraestrutura 👨‍💻
           </p>
         </div>
       </div>

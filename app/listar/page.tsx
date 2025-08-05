@@ -573,7 +573,7 @@ export default function ListarPage() {
                       </p>
                       <p className="text-xs text-blue-600 font-medium">
                         <i className="ri-user-line mr-1"></i>
-                        José dos Santos Silva
+                        José dos Santos Silva - Técnico de Infraestrutura
                       </p>
                     </div>
                   </div>
@@ -665,7 +665,7 @@ export default function ListarPage() {
                       <p className="text-sm text-gray-500">{selectedEquipment.codigo}</p>
                       <p className="text-xs text-blue-600 font-medium mb-1">
                         <i className="ri-user-line mr-1"></i>
-                        José dos Santos Silva
+                        José dos Santos Silva - Técnico de Infraestrutura
                       </p>
                       <p className="text-sm text-green-600">
                         Disponível: {selectedEquipment.quantidade} unidades
@@ -786,7 +786,7 @@ export default function ListarPage() {
                     </label>
                     <input
                       type="text"
-                      value="José dos Santos Silva"
+                      value="José dos Santos Silva - Técnico de Infraestrutura"
                       readOnly
                       className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
                       required
