@@ -2,14 +2,15 @@
   "name": "Sistema de Controle de Estoque",
   "short_name": "Estoque Pro",
   "description": "Sistema completo para controle e gerenciamento de estoque de equipamentos",
-  "start_url": "/",
+  "start_url": "/?utm_source=pwa",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
   "background_color": "#ffffff",
   "theme_color": "#ff9500",
-  "orientation": "any",
+  "orientation": "portrait-primary",
   "scope": "/",
   "lang": "pt-BR",
+  "id": "sistema-estoque-pwa",
   "categories": [
     "business",
     "productivity",
@@ -65,90 +66,6 @@
       "purpose": "any maskable"
     }
   ],
-  "screenshots": [
-    {
-      "src": "/screenshots/desktop-1.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Tela principal do sistema"
-    },
-    {
-      "src": "/screenshots/mobile-1.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Interface mobile otimizada"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Adicionar Equipamento",
-      "short_name": "Adicionar",
-      "description": "Adicionar novo equipamento ao estoque",
-      "url": "/adicionar",
-      "icons": [
-        {
-          "src": "/icons/add-icon.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "Listar Equipamentos",
-      "short_name": "Listar",
-      "description": "Ver todos os equipamentos em estoque",
-      "url": "/listar",
-      "icons": [
-        {
-          "src": "/icons/list-icon.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "Equipamentos Utilizados",
-      "short_name": "Em Uso",
-      "description": "Ver equipamentos em uso",
-      "url": "/utilizados",
-      "icons": [
-        {
-          "src": "/icons/used-icon.png",
-          "sizes": "96x96"
-        }
-      ]
-    }
-  ],
   "related_applications": [],
-  "prefer_related_applications": false,
-  "protocol_handlers": [
-    {
-      "protocol": "web+estoque",
-      "url": "/?action=%s"
-    }
-  ],
-  "file_handlers": [
-    {
-      "action": "/",
-      "accept": {
-        "text/csv": [".csv"],
-        "application/json": [".json"]
-      }
-    }
-  ],
-  "edge_side_panel": {
-    "preferred_width": 400
-  },
-  "launch_handler": {
-    "client_mode": "navigate-existing"
-  },
-  "share_target": {
-    "action": "/",
-    "method": "GET",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
-    }
-  }
+  "prefer_related_applications": false
 }
