@@ -60,7 +60,7 @@ export default function UtilizadosPage() {
         return;
       }
 
-      await loadUsedEquipments();
+      await loadUsedEquipments(user.id);
     } catch (error) {
       console.error('Erro ao verificar autenticação:', error);
       setError('Erro ao carregar dados. Tentando carregar do cache local...');
@@ -79,16 +79,23 @@ export default function UtilizadosPage() {
     }
   };
 
-  const loadUsedEquipments = async () => {
+  const loadUsedEquipments = async (userId?: string) => {
     try {
-      const data = await usedEquipmentService.getAll();
+      // Se userId for fornecido, busca apenas os equipamentos do usuário
+      const data = userId 
+        ? await usedEquipmentService.getByUser(userId)
+        : await usedEquipmentService.getAll();
       setEquipamentosUtilizados(data || []);
     } catch (error) {
       console.error('Erro ao carregar equipamentos utilizados:', error);
       // Fallback para localStorage
       try {
         const localData = JSON.parse(localStorage.getItem('estoque-utilizados') || '[]');
-        setEquipamentosUtilizados(localData);
+        // Filtrar por usuário se userId for fornecido
+        const filteredData = userId 
+          ? localData.filter((eq: any) => eq.user_id === userId)
+          : localData;
+        setEquipamentosUtilizados(filteredData);
       } catch (localError) {
         console.error('Erro ao carregar do localStorage:', localError);
         setEquipamentosUtilizados([]);
@@ -103,7 +110,11 @@ export default function UtilizadosPage() {
 
     try {
       await usedEquipmentService.return(equipmentId);
-      await loadUsedEquipments();
+      // Recarregar a lista do usuário atual
+      const user = await authService.getCurrentUser();
+      if (user) {
+        await loadUsedEquipments(user.id);
+      }
       alert('Equipamento devolvido ao estoque com sucesso!');
     } catch (error) {
       console.error('Erro ao devolver equipamento:', error);
@@ -149,7 +160,11 @@ export default function UtilizadosPage() {
         observacoes: editForm.observacoes
       });
 
-      await loadUsedEquipments();
+      // Recarregar a lista do usuário atual
+      const user = await authService.getCurrentUser();
+      if (user) {
+        await loadUsedEquipments(user.id);
+      }
       setShowEditModal(false);
       setSelectedEquipment(null);
       alert('Equipamento atualizado com sucesso!');

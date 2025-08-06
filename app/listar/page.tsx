@@ -248,7 +248,8 @@ export default function ListarPage() {
         local: withdrawForm.local,
         responsavel: withdrawForm.responsavel,
         data_uso: new Date().toISOString().split('T')[0],
-        observacoes: withdrawForm.observacoes
+        observacoes: withdrawForm.observacoes,
+        user_id: currentUser.id
       });
 
       const novaQuantidade = selectedEquipment.quantidade - withdrawForm.quantidade;

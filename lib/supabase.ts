@@ -105,7 +105,19 @@ export const equipmentService = {
 }
 
 export const usedEquipmentService = {
-  // Buscar todos os equipamentos utilizados
+  // Buscar equipamentos utilizados do usuário logado
+  async getByUser(userId: string) {
+    const { data, error } = await supabase
+      .from('equipamentos_utilizados')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    return data || []
+  },
+
+  // Buscar todos os equipamentos utilizados (apenas para admins)
   async getAll() {
     const { data, error } = await supabase
       .from('equipamentos_utilizados')
@@ -117,7 +129,7 @@ export const usedEquipmentService = {
   },
 
   // Adicionar equipamento utilizado
-  async create(equipment: Omit<EquipmentUsed, 'id' | 'created_at' | 'updated_at'>) {
+  async create(equipment: Omit<EquipmentUsed, 'id' | 'created_at' | 'updated_at'> & { user_id: string }) {
     const { data, error } = await supabase
       .from('equipamentos_utilizados')
       .insert([equipment])
